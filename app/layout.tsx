@@ -17,8 +17,8 @@ const geistSans = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Adama — Gestion Immobilière",
-  description: "Dashboard de gestion immobilière pour la sous-location en Chine",
+  title: "CHINEFY — Votre logement en Chine",
+  description: "Logements vérifiés, aide juridique, transferts et services pour expatriés en Chine",
 };
 
 export default function RootLayout({

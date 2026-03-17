@@ -14,6 +14,8 @@ import {
   Settings,
   MessageSquare,
   AlertTriangle,
+  Compass,
+  List,
 } from "lucide-react";
 import {
   Sidebar,
@@ -34,6 +36,8 @@ const mainNav = [
   { title: "Agences", href: "/agencies", icon: Building },
   { title: "Villes", href: "/cities", icon: MapPin },
   { title: "Messages", href: "/messages", icon: MessageSquare },
+  { title: "Destinations", href: "/destinations", icon: Compass },
+  { title: "Listes", href: "/lists", icon: List },
 ];
 
 const financeNav = [
@@ -80,11 +84,8 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="border-b border-[#EBEBEB] px-6 py-5">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FF385C]">
-            <Building2 className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-xl font-bold text-[#222222]">Adama</span>
+        <Link href="/" className="flex items-center">
+          <span className="text-xl font-black tracking-tight text-[#FF385C]">CHINEFY</span>
         </Link>
       </SidebarHeader>
 

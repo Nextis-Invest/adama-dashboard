@@ -196,7 +196,7 @@ const columns = [
     header: "Loyer /mois",
     cell: (info) => (
       <span className="font-medium text-[#222222]">
-        {Number(info.getValue()).toLocaleString("fr-FR")} CNY
+        {Number(info.getValue()).toLocaleString("fr-FR")} €
       </span>
     ),
   }),

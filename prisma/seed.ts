@@ -5,6 +5,10 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Clean existing data
+  await prisma.propertyListItem.deleteMany();
+  await prisma.propertyList.deleteMany();
+  await prisma.destinationLink.deleteMany();
+  await prisma.destinationCategory.deleteMany();
   await prisma.message.deleteMany();
   await prisma.conversationParticipant.deleteMany();
   await prisma.conversation.deleteMany();
@@ -403,8 +407,133 @@ async function main() {
     });
   }
 
+  // ─── Destination Categories (for "Des idées pour vos prochaines escapades") ───
+  await prisma.destinationCategory.create({
+    data: {
+      name: "Populaire",
+      slug: "populaire",
+      icon: "flame",
+      order: 0,
+      links: {
+        create: [
+          { title: "Beijing", subtitle: "北京 · Logements", order: 0 },
+          { title: "Shanghai", subtitle: "上海 · Logements", order: 1 },
+          { title: "Guangzhou", subtitle: "广州 · Logements", order: 2 },
+          { title: "Shenzhen", subtitle: "深圳 · Logements", order: 3 },
+          { title: "Chengdu", subtitle: "成都 · Logements", order: 4 },
+          { title: "Hangzhou", subtitle: "杭州 · Logements", order: 5 },
+        ],
+      },
+    },
+  });
+
+  await prisma.destinationCategory.create({
+    data: {
+      name: "Quartiers modernes",
+      slug: "quartiers-modernes",
+      icon: "building-2",
+      order: 1,
+      links: {
+        create: [
+          { title: "Pudong, Shanghai", subtitle: "陆家嘴 · Appartements", order: 0 },
+          { title: "Chaoyang, Beijing", subtitle: "朝阳区 · Studios", order: 1 },
+          { title: "Nanshan, Shenzhen", subtitle: "南山区 · Lofts", order: 2 },
+          { title: "Tianhe, Guangzhou", subtitle: "天河区 · Appartements", order: 3 },
+          { title: "Gaoxin, Chengdu", subtitle: "高新区 · Studios", order: 4 },
+        ],
+      },
+    },
+  });
+
+  await prisma.destinationCategory.create({
+    data: {
+      name: "Proche nature",
+      slug: "proche-nature",
+      icon: "tree-pine",
+      order: 2,
+      links: {
+        create: [
+          { title: "Chengdu", subtitle: "成都 · Villas avec jardin", order: 0 },
+          { title: "Kunming", subtitle: "昆明 · Maisons", order: 1 },
+          { title: "Hangzhou", subtitle: "杭州 · Lac de l'Ouest", order: 2 },
+          { title: "Guilin", subtitle: "桂林 · Logements nature", order: 3 },
+        ],
+      },
+    },
+  });
+
+  await prisma.destinationCategory.create({
+    data: {
+      name: "Centre-ville",
+      slug: "centre-ville",
+      icon: "globe",
+      order: 3,
+      links: {
+        create: [
+          { title: "Jing'an, Shanghai", subtitle: "静安区 · Studios meublés", order: 0 },
+          { title: "Dongcheng, Beijing", subtitle: "东城区 · Appartements", order: 1 },
+          { title: "Yuexiu, Guangzhou", subtitle: "越秀区 · Chambres privées", order: 2 },
+          { title: "Futian, Shenzhen", subtitle: "福田区 · Logements", order: 3 },
+          { title: "Jinjiang, Chengdu", subtitle: "锦江区 · Studios", order: 4 },
+        ],
+      },
+    },
+  });
+
+  // ─── Curated Property Lists ───
+  const listBeijing = await prisma.propertyList.create({
+    data: {
+      title: "Logements populaires · Beijing",
+      slug: "populaires-beijing",
+      tag: "beijing",
+      order: 0,
+      isActive: true,
+    },
+  });
+
+  const listShanghai = await prisma.propertyList.create({
+    data: {
+      title: "Coups de cœur · Shanghai",
+      slug: "coups-de-coeur-shanghai",
+      tag: "shanghai",
+      order: 1,
+      isActive: true,
+    },
+  });
+
+  const listLuxe = await prisma.propertyList.create({
+    data: {
+      title: "Logements de luxe",
+      slug: "logements-luxe",
+      order: 2,
+      isActive: true,
+    },
+  });
+
+  // Assign properties to lists
+  const beijingProps = properties.filter((p) => p.cityId === cities[0].id);
+  for (let i = 0; i < beijingProps.length; i++) {
+    await prisma.propertyListItem.create({
+      data: { listId: listBeijing.id, propertyId: beijingProps[i].id, order: i },
+    });
+  }
+
+  const shanghaiProps = properties.filter((p) => p.cityId === cities[1].id);
+  for (let i = 0; i < shanghaiProps.length; i++) {
+    await prisma.propertyListItem.create({
+      data: { listId: listShanghai.id, propertyId: shanghaiProps[i].id, order: i },
+    });
+  }
+
+  const luxeProps = properties.filter((p) => Number(p.monthlyRent) >= 10000);
+  for (let i = 0; i < luxeProps.length; i++) {
+    await prisma.propertyListItem.create({
+      data: { listId: listLuxe.id, propertyId: luxeProps[i].id, order: i },
+    });
+  }
+
   console.log("Seed completed successfully!");
-  console.log(`Created: 1 admin, 2 agents, 1 viewer, 5 cities, 3 agencies, ${properties.length} properties`);
+  console.log(`Created: 1 admin, 2 agents, 1 viewer, 5 cities, 3 agencies, ${properties.length} properties, 3 curated lists, 4 destination categories`);
 }
 
 main()

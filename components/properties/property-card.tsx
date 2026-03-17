@@ -176,7 +176,7 @@ export function PropertyCard({ property, onEdit, onDelete }: PropertyCardProps) 
         <div className="flex items-end justify-between">
           <div>
             <span className="text-base font-bold text-[#222222]">
-              {Number(property.monthlyRent).toLocaleString("fr-FR")} CNY
+              {Number(property.monthlyRent).toLocaleString("fr-FR")} €
             </span>
             <span className="text-xs text-[#6A6A6A]"> /mois</span>
           </div>

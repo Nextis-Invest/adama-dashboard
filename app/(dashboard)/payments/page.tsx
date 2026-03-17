@@ -179,13 +179,13 @@ export default function PaymentsPage() {
                       {((p.property as Record<string, unknown>).city as Record<string, string>).pinyin}
                     </TableCell>
                     <TableCell className="text-right">
-                      ¥{Number(p.amountDue).toLocaleString()}
+                      {Number(p.amountDue).toLocaleString("fr-FR")} €
                     </TableCell>
                     <TableCell className="text-right">
-                      ¥{Number(p.amountPaid).toLocaleString()}
+                      {Number(p.amountPaid).toLocaleString("fr-FR")} €
                     </TableCell>
                     <TableCell className="text-right">
-                      ¥{Number(p.commission).toLocaleString()}
+                      {Number(p.commission).toLocaleString("fr-FR")} €
                     </TableCell>
                     <TableCell>
                       <Badge

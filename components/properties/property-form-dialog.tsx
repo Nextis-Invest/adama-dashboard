@@ -577,7 +577,7 @@ export function PropertyFormDialog({
             <SectionTitle>Financier</SectionTitle>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="space-y-1.5">
-                <Label htmlFor="monthlyRent">Loyer /mois (CNY) *</Label>
+                <Label htmlFor="monthlyRent">Loyer /mois (EUR) *</Label>
                 <Input
                   id="monthlyRent"
                   type="number"
@@ -594,7 +594,7 @@ export function PropertyFormDialog({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="deposit">Caution (CNY)</Label>
+                <Label htmlFor="deposit">Caution (EUR)</Label>
                 <Input
                   id="deposit"
                   type="number"
@@ -622,7 +622,7 @@ export function PropertyFormDialog({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="utilities">Charges (CNY)</Label>
+                <Label htmlFor="utilities">Charges (EUR)</Label>
                 <Input
                   id="utilities"
                   type="number"

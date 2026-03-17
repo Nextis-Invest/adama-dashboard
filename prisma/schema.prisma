@@ -197,7 +197,41 @@ model Property {
   @@index([status])
   @@index([type])
   @@index([listingType])
+  listItems PropertyListItem[]
+
   @@map("properties")
+}
+
+// ─── Curated Property Lists (admin-managed carousels) ───────
+
+model PropertyList {
+  id       String  @id @default(cuid())
+  title    String  // e.g. "Logements populaires · Chengdu"
+  slug     String  @unique
+  tag      String? // optional tag to auto-include properties (e.g. "popular-chengdu")
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  items PropertyListItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("property_lists")
+}
+
+model PropertyListItem {
+  id         String @id @default(cuid())
+  listId     String
+  propertyId String
+  order      Int    @default(0)
+
+  list     PropertyList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  property Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, propertyId])
+  @@index([listId])
+  @@map("property_list_items")
 }
 
 // ─── Payment ────────────────────────────────────────────────
@@ -221,6 +255,41 @@ model Payment {
 
   @@unique([propertyId, period])
   @@map("payments")
+}
+
+// ─── Destinations ("Des idées pour vos prochaines escapades") ──
+
+model DestinationCategory {
+  id       String  @id @default(cuid())
+  name     String  @unique // e.g. "Populaire", "Sur le littoral"
+  slug     String  @unique // e.g. "populaire", "sur-le-littoral"
+  icon     String? // Lucide icon name (e.g. "flame", "waves")
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  links DestinationLink[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("destination_categories")
+}
+
+model DestinationLink {
+  id         String @id @default(cuid())
+  categoryId String
+  title      String // e.g. "Beijing"
+  subtitle   String? // e.g. "北京 · Logements"
+  href       String? // optional link URL
+  order      Int    @default(0)
+
+  category DestinationCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@map("destination_links")
 }
 
 // ─── Messaging ──────────────────────────────────────────────

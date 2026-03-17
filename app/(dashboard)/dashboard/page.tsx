@@ -23,8 +23,8 @@ const CityChart = dynamic(
   { ssr: false }
 );
 
-function formatCNY(n: number) {
-  return `¥${n.toLocaleString("zh-CN")}`;
+function formatEUR(n: number) {
+  return `${n.toLocaleString("fr-FR")} €`;
 }
 
 function ChangeIndicator({ change }: { change?: number }) {
@@ -118,7 +118,7 @@ export default function DashboardPage() {
           </div>
           <div className="mt-3 flex items-end gap-2">
             <span className="font-display text-3xl font-bold text-[#222222]">
-              {stats ? formatCNY(stats.currentRevenue) : "—"}
+              {stats ? formatEUR(stats.currentRevenue) : "—"}
             </span>
             <ChangeIndicator change={stats?.revenueChange} />
           </div>
@@ -134,7 +134,7 @@ export default function DashboardPage() {
           </div>
           <div className="mt-3 flex items-end gap-2">
             <span className="font-display text-3xl font-bold text-[#222222]">
-              {stats ? formatCNY(stats.currentCommission) : "—"}
+              {stats ? formatEUR(stats.currentCommission) : "—"}
             </span>
             <ChangeIndicator change={stats?.commissionChange} />
           </div>

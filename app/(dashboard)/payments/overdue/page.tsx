@@ -91,10 +91,10 @@ export default function OverduePaymentsPage() {
                         }
                       </TableCell>
                       <TableCell className="text-right">
-                        ¥{Number(p.amountDue).toLocaleString()}
+                        {Number(p.amountDue).toLocaleString("fr-FR")} €
                       </TableCell>
                       <TableCell className="text-right">
-                        ¥{Number(p.amountPaid).toLocaleString()}
+                        {Number(p.amountPaid).toLocaleString("fr-FR")} €
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="bg-red-100 text-red-700">

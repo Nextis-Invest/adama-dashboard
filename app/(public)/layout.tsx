@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Building2, Search, Heart, User } from "lucide-react";
+import { Search, Heart, User, SlidersHorizontal } from "lucide-react";
+import { DesktopHeader } from "@/components/public/desktop-header";
 
 export default function PublicLayout({
   children,
@@ -8,25 +9,26 @@ export default function PublicLayout({
 }) {
   return (
     <div className="min-h-screen bg-white pb-16 sm:pb-0">
-      {/* Desktop header — hidden on mobile */}
-      <header className="sticky top-0 z-50 hidden border-b border-[#EBEBEB] bg-white/80 backdrop-blur-md sm:block">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FF385C]">
-              <Building2 className="h-4 w-4 text-white" />
+      {/* Mobile sticky search header — Airbnb style */}
+      <header className="sticky top-0 z-50 bg-white px-4 pb-3 pt-3 shadow-sm sm:hidden">
+        <div className="flex items-center gap-3">
+          <button className="flex flex-1 items-center gap-3 rounded-full border border-[#DDDDDD] bg-white px-4 py-2.5 shadow-sm">
+            <Search className="size-4 shrink-0 text-[#222222]" />
+            <div className="min-w-0 text-left">
+              <p className="text-[13px] font-semibold text-[#222222]">Où allez-vous ?</p>
+              <p className="truncate text-xs text-[#6A6A6A]">
+                Toutes les villes · Type · Rechercher
+              </p>
             </div>
-            <span className="font-display text-xl font-bold text-[#222222]">
-              Adama
-            </span>
-          </Link>
-          <Link
-            href="/login"
-            className="rounded-lg bg-[#222222] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#000000]"
-          >
-            Connexion
-          </Link>
+          </button>
+          <button className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#DDDDDD]">
+            <SlidersHorizontal className="size-4 text-[#222222]" />
+          </button>
         </div>
       </header>
+
+      {/* Desktop header with search bar */}
+      <DesktopHeader />
 
       {children}
 
