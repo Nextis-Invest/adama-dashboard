@@ -62,7 +62,7 @@ export async function GET(req: Request) {
       prisma.property.count({ where }),
       prisma.city.findMany({
         where: { isActive: true },
-        select: { id: true, name: true, pinyin: true },
+        select: { id: true, name: true, pinyin: true, province: true, description: true, famousFor: true, coverImage: true },
         orderBy: { pinyin: "asc" },
       }),
     ]);

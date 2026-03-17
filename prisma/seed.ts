@@ -32,19 +32,19 @@ async function main() {
   // Create cities
   const cities = await Promise.all([
     prisma.city.create({
-      data: { name: "北京", pinyin: "Beijing", province: "北京市" },
+      data: { name: "北京", pinyin: "Beijing", province: "北京市", description: "Capitale historique et politique", famousFor: "Célèbre pour la Cité interdite et la Grande Muraille" },
     }),
     prisma.city.create({
-      data: { name: "上海", pinyin: "Shanghai", province: "上海市" },
+      data: { name: "上海", pinyin: "Shanghai", province: "上海市", description: "Centre financier international", famousFor: "Célèbre pour le Bund et la skyline de Pudong" },
     }),
     prisma.city.create({
-      data: { name: "广州", pinyin: "Guangzhou", province: "广东省" },
+      data: { name: "广州", pinyin: "Guangzhou", province: "广东省", description: "Capitale du commerce et de la gastronomie", famousFor: "Célèbre pour la Canton Fair et le dim sum" },
     }),
     prisma.city.create({
-      data: { name: "深圳", pinyin: "Shenzhen", province: "广东省" },
+      data: { name: "深圳", pinyin: "Shenzhen", province: "广东省", description: "Hub technologique mondial", famousFor: "Célèbre pour Huaqiangbei et les startups tech" },
     }),
     prisma.city.create({
-      data: { name: "成都", pinyin: "Chengdu", province: "四川省" },
+      data: { name: "成都", pinyin: "Chengdu", province: "四川省", description: "Populaire auprès des expatriés", famousFor: "Célèbre pour les pandas géants et la cuisine sichuanaise" },
     }),
   ]);
 

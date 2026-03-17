@@ -38,6 +38,9 @@ type City = {
   name: string;
   pinyin: string;
   province: string;
+  description?: string;
+  famousFor?: string;
+  coverImage?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -102,6 +105,15 @@ export function CitiesPage() {
     {
       accessorKey: "province",
       header: "Province",
+    },
+    {
+      accessorKey: "description",
+      header: "Description",
+      cell: ({ row }) => (
+        <span className="text-[#6A6A6A] truncate max-w-[200px] block">
+          {row.original.description || "—"}
+        </span>
+      ),
     },
     {
       accessorKey: "isActive",

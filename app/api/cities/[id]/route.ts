@@ -8,6 +8,9 @@ const updateCitySchema = z.object({
   name: z.string().min(1, "Le nom est requis").optional(),
   pinyin: z.string().min(1, "Le pinyin est requis").optional(),
   province: z.string().min(1, "La province est requise").optional(),
+  description: z.string().optional(),
+  famousFor: z.string().optional(),
+  coverImage: z.string().optional(),
   isActive: z.boolean().optional(),
 });
 

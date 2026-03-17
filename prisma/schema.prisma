@@ -88,6 +88,11 @@ model City {
   province String
   isActive Boolean @default(true)
 
+  // Search metadata (admin-managed)
+  description String? // e.g. "Destination balnéaire prisée"
+  famousFor   String? // e.g. "Célèbre pour la Grande Muraille"
+  coverImage  String? // City illustration/photo URL
+
   agencies   Agency[]
   properties Property[]
 

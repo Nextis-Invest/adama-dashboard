@@ -23,6 +23,9 @@ const citySchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
   pinyin: z.string().min(1, "Le pinyin est requis"),
   province: z.string().min(1, "La province est requise"),
+  description: z.string().optional().default(""),
+  famousFor: z.string().optional().default(""),
+  coverImage: z.string().optional().default(""),
   isActive: z.boolean(),
 });
 
@@ -33,6 +36,9 @@ type CityData = {
   name: string;
   pinyin: string;
   province: string;
+  description?: string;
+  famousFor?: string;
+  coverImage?: string;
   isActive: boolean;
 } | null;
 
@@ -53,6 +59,9 @@ export function CityFormDialog({ open, onOpenChange, city }: CityFormDialogProps
       name: "",
       pinyin: "",
       province: "",
+      description: "",
+      famousFor: "",
+      coverImage: "",
       isActive: true,
     },
   });
@@ -63,6 +72,9 @@ export function CityFormDialog({ open, onOpenChange, city }: CityFormDialogProps
         name: city.name,
         pinyin: city.pinyin,
         province: city.province,
+        description: city.description ?? "",
+        famousFor: city.famousFor ?? "",
+        coverImage: city.coverImage ?? "",
         isActive: city.isActive,
       });
     } else {
@@ -70,6 +82,9 @@ export function CityFormDialog({ open, onOpenChange, city }: CityFormDialogProps
         name: "",
         pinyin: "",
         province: "",
+        description: "",
+        famousFor: "",
+        coverImage: "",
         isActive: true,
       });
     }
@@ -112,7 +127,7 @@ export function CityFormDialog({ open, onOpenChange, city }: CityFormDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Modifier la ville" : "Ajouter une ville"}
@@ -168,6 +183,33 @@ export function CityFormDialog({ open, onOpenChange, city }: CityFormDialogProps
                 {form.formState.errors.province.message}
               </p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Input
+              id="description"
+              placeholder="Ex: Hub technologique mondial"
+              {...form.register("description")}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="famousFor">Célèbre pour</Label>
+            <Input
+              id="famousFor"
+              placeholder="Ex: Célèbre pour la Grande Muraille"
+              {...form.register("famousFor")}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="coverImage">Image de couverture</Label>
+            <Input
+              id="coverImage"
+              placeholder="URL de l'image"
+              {...form.register("coverImage")}
+            />
           </div>
 
           <div className="flex items-center gap-2">

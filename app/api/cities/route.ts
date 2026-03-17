@@ -8,6 +8,9 @@ const createCitySchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
   pinyin: z.string().min(1, "Le pinyin est requis"),
   province: z.string().min(1, "La province est requise"),
+  description: z.string().optional().default(""),
+  famousFor: z.string().optional().default(""),
+  coverImage: z.string().optional().default(""),
   isActive: z.boolean().default(true),
 });
 

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -18,6 +19,10 @@ interface City {
   id: string;
   name: string;
   pinyin: string;
+  province?: string;
+  description?: string | null;
+  famousFor?: string | null;
+  coverImage?: string | null;
 }
 
 interface Property {
@@ -101,6 +106,13 @@ export function MobileSearchOverlay({
     }
   }, [open]);
 
+  // Helper to get city sublabel for search suggestions
+  function getCitySublabel(city: City): string {
+    if (city.description) return city.description;
+    if (city.famousFor) return city.famousFor;
+    return city.name;
+  }
+
   useEffect(() => {
     if (!query.trim()) {
       // Show default: recent searches + trending suggestions + featured properties
@@ -119,7 +131,7 @@ export function MobileSearchOverlay({
             type: "trending",
             icon: "trending",
             label: `Logements à ${c.pinyin}`,
-            sublabel: c.name,
+            sublabel: getCitySublabel(c),
             value: c.id,
           });
         }
@@ -157,7 +169,7 @@ export function MobileSearchOverlay({
           type: "city",
           icon: "city",
           label: `Logements à ${c.pinyin}`,
-          sublabel: c.name,
+          sublabel: getCitySublabel(c),
           value: c.id,
         });
       }
@@ -237,6 +249,18 @@ export function MobileSearchOverlay({
       default:
         return <MapPin className="size-5 text-[#6A6A6A]" />;
     }
+  }
+
+  // Helper to handle city destination click from the popular destinations section
+  function handleCityDestinationClick(city: City) {
+    const suggestion: Suggestion = {
+      type: "trending",
+      icon: "trending",
+      label: `Logements à ${city.pinyin}`,
+      sublabel: getCitySublabel(city),
+      value: city.id,
+    };
+    handleSelect(suggestion);
   }
 
   if (!open) return null;
@@ -329,23 +353,42 @@ export function MobileSearchOverlay({
               </div>
             )}
 
-            {/* Trending */}
-            {trendingSuggestions.length > 0 && (
+            {/* Popular destinations - Airbnb-style rows */}
+            {cities.length > 0 && (
               <div className="mb-5">
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#6A6A6A]">
                   Destinations populaires
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  {trendingSuggestions.map((s, i) => (
+                <div className="flex flex-col">
+                  {cities.slice(0, 6).map((city) => (
                     <button
-                      key={`trending-${i}`}
-                      onClick={() => handleSelect(s)}
-                      className="flex items-center gap-2 rounded-full border border-[#DDDDDD] px-4 py-2.5 text-left transition-colors active:bg-[#F7F7F7]"
+                      key={`dest-${city.id}`}
+                      onClick={() => handleCityDestinationClick(city)}
+                      className="flex w-full items-center gap-3 rounded-xl px-2 py-3 text-left transition-colors active:bg-[#F7F7F7]"
                     >
-                      <MapPin className="size-3.5 text-[#FF385C]" />
-                      <span className="text-sm font-medium text-[#222222]">
-                        {s.label.replace("Logements à ", "")}
-                      </span>
+                      {/* City thumbnail */}
+                      <div className="size-12 shrink-0 overflow-hidden rounded-lg bg-[#F7F7F7]">
+                        {city.coverImage ? (
+                          <img
+                            src={city.coverImage}
+                            alt={city.pinyin}
+                            className="size-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex size-full items-center justify-center">
+                            <MapPin className="size-5 text-[#B0B0B0]" />
+                          </div>
+                        )}
+                      </div>
+                      {/* City info */}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-[#222222]">
+                          {city.pinyin}
+                        </p>
+                        <p className="truncate text-xs text-[#6A6A6A]">
+                          {city.description || city.famousFor || (city.province ? `${city.name}, ${city.province}` : city.name)}
+                        </p>
+                      </div>
                     </button>
                   ))}
                 </div>
