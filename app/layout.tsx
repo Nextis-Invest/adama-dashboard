@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Funnel_Display } from "next/font/google";
+import localFont from "next/font/local";
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-sans",
+const funnelDisplay = Funnel_Display({
+  variable: "--font-funnel",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const geistSans = localFont({
+  src: "../node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2",
+  variable: "--font-geist",
   display: "swap",
 });
 
@@ -20,8 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr">
-      <body className={`${jakarta.variable} antialiased`}>
+    <html lang="fr" className={`${geistSans.variable} ${funnelDisplay.variable}`}>
+      <body className="antialiased">
         {children}
         <Toaster position="top-right" richColors />
       </body>

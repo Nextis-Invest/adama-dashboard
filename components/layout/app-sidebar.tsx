@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainNav = [
-  { title: "Dashboard", href: "/", icon: LayoutDashboard },
+  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "Propriétés", href: "/properties", icon: Building2 },
   { title: "Agences", href: "/agencies", icon: Building },
   { title: "Villes", href: "/cities", icon: MapPin },
@@ -55,7 +55,9 @@ function NavItem({
   pathname: string;
 }) {
   const isActive =
-    item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+    item.href === "/dashboard"
+      ? pathname === "/dashboard"
+      : pathname.startsWith(item.href);
 
   return (
     <SidebarMenuItem>
