@@ -1,11 +1,12 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ChevronLeft,
+  ChevronRight,
   Share,
   Wifi,
   Car,
@@ -30,6 +31,9 @@ import {
   Sofa,
   Users,
   Home,
+  CalendarDays,
+  Minus,
+  Plus,
   type LucideIcon,
 } from "lucide-react";
 
@@ -190,6 +194,175 @@ function PhotoGallery({ property }: { property: PropertyDetail }) {
 
 /* ─── Booking Card ─── */
 
+/* ─── Mini Calendar (inline, no external deps) ─── */
+
+const FR_MONTHS = [
+  "janvier", "février", "mars", "avril", "mai", "juin",
+  "juillet", "août", "septembre", "octobre", "novembre", "décembre",
+];
+const FR_DAYS = ["lu", "ma", "me", "je", "ve", "sa", "di"];
+
+function getMondayStart(year: number, month: number) {
+  const first = new Date(year, month, 1);
+  const day = first.getDay();
+  return day === 0 ? 6 : day - 1; // Monday = 0
+}
+
+function getDaysInMonth(year: number, month: number) {
+  return new Date(year, month + 1, 0).getDate();
+}
+
+function isSameDay(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function isBetween(d: Date, from: Date, to: Date) {
+  return d > from && d < to;
+}
+
+function MiniCalendar({
+  checkin,
+  checkout,
+  onSelect,
+}: {
+  checkin: Date | null;
+  checkout: Date | null;
+  onSelect: (d: Date) => void;
+}) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const [viewMonth, setViewMonth] = useState(today.getMonth());
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+
+  function prev() {
+    if (viewMonth === 0) { setViewMonth(11); setViewYear(viewYear - 1); }
+    else setViewMonth(viewMonth - 1);
+  }
+  function next() {
+    if (viewMonth === 11) { setViewMonth(0); setViewYear(viewYear + 1); }
+    else setViewMonth(viewMonth + 1);
+  }
+
+  const canPrev = viewYear > today.getFullYear() || (viewYear === today.getFullYear() && viewMonth > today.getMonth());
+  const startDay = getMondayStart(viewYear, viewMonth);
+  const daysCount = getDaysInMonth(viewYear, viewMonth);
+
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < startDay; i++) cells.push(null);
+  for (let d = 1; d <= daysCount; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  return (
+    <div>
+      {/* Month nav */}
+      <div className="flex items-center justify-between mb-3">
+        <button
+          onClick={prev}
+          disabled={!canPrev}
+          className="flex size-8 items-center justify-center rounded-full hover:bg-[#F7F7F7] disabled:opacity-30"
+        >
+          <ChevronLeft className="size-4" />
+        </button>
+        <span className="text-sm font-semibold text-[#222222] capitalize">
+          {FR_MONTHS[viewMonth]} {viewYear}
+        </span>
+        <button
+          onClick={next}
+          className="flex size-8 items-center justify-center rounded-full hover:bg-[#F7F7F7]"
+        >
+          <ChevronRight className="size-4" />
+        </button>
+      </div>
+
+      {/* Day headers */}
+      <div className="grid grid-cols-7 mb-1">
+        {FR_DAYS.map((d) => (
+          <div key={d} className="text-center text-[11px] font-medium text-[#6A6A6A] py-1">
+            {d}
+          </div>
+        ))}
+      </div>
+
+      {/* Days grid */}
+      <div className="grid grid-cols-7">
+        {cells.map((day, i) => {
+          if (day === null) return <div key={`e-${i}`} className="aspect-square" />;
+
+          const date = new Date(viewYear, viewMonth, day);
+          date.setHours(0, 0, 0, 0);
+          const isPast = date < today;
+          const isCheckin = checkin && isSameDay(date, checkin);
+          const isCheckout = checkout && isSameDay(date, checkout);
+          const isInRange = checkin && checkout && isBetween(date, checkin, checkout);
+          const isSelected = isCheckin || isCheckout;
+
+          return (
+            <button
+              key={`d-${day}`}
+              disabled={isPast}
+              onClick={() => !isPast && onSelect(date)}
+              className={`
+                relative aspect-square flex items-center justify-center text-[13px] transition-colors
+                ${isPast ? "text-[#B0B0B0] cursor-default" : "text-[#222222] hover:bg-[#F7F7F7] cursor-pointer"}
+                ${isSelected ? "!bg-[#222222] !text-white rounded-full font-semibold" : ""}
+                ${isInRange ? "!bg-[#F7F7F7]" : ""}
+              `}
+            >
+              {day}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Guest Counter Row ─── */
+
+function GuestRow({
+  label,
+  sublabel,
+  value,
+  min,
+  max,
+  onChange,
+}: {
+  label: string;
+  sublabel: string;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between py-3">
+      <div>
+        <p className="text-sm font-medium text-[#222222]">{label}</p>
+        <p className="text-xs text-[#6A6A6A]">{sublabel}</p>
+      </div>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => onChange(Math.max(min, value - 1))}
+          disabled={value <= min}
+          className="flex size-8 items-center justify-center rounded-full border border-[#B0B0B0] text-[#6A6A6A] transition-colors hover:border-[#222222] hover:text-[#222222] disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <Minus className="size-3.5" />
+        </button>
+        <span className="w-5 text-center text-sm font-medium text-[#222222]">{value}</span>
+        <button
+          onClick={() => onChange(Math.min(max, value + 1))}
+          disabled={value >= max}
+          className="flex size-8 items-center justify-center rounded-full border border-[#B0B0B0] text-[#6A6A6A] transition-colors hover:border-[#222222] hover:text-[#222222] disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <Plus className="size-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Booking Card ─── */
+
 function BookingCard({ property }: { property: PropertyDetail }) {
   const hasDiscount =
     property.discountMonthly && Number(property.discountMonthly) > 0;
@@ -198,6 +371,80 @@ function BookingCard({ property }: { property: PropertyDetail }) {
   const discountedRent = hasDiscount
     ? Math.round(originalRent * (1 - discountPercent / 100))
     : originalRent;
+
+  // Date state
+  const [checkin, setCheckin] = useState<Date | null>(null);
+  const [checkout, setCheckout] = useState<Date | null>(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [selectingCheckout, setSelectingCheckout] = useState(false);
+
+  // Guest state
+  const [showGuests, setShowGuests] = useState(false);
+  const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState(0);
+  const [infants, setInfants] = useState(0);
+
+  const calRef = useRef<HTMLDivElement>(null);
+  const guestRef = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (calRef.current && !calRef.current.contains(e.target as Node)) {
+        setShowCalendar(false);
+      }
+      if (guestRef.current && !guestRef.current.contains(e.target as Node)) {
+        setShowGuests(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  function handleDateSelect(d: Date) {
+    if (!selectingCheckout || !checkin) {
+      // Selecting check-in
+      setCheckin(d);
+      setCheckout(null);
+      setSelectingCheckout(true);
+    } else {
+      // Selecting checkout
+      if (d <= checkin) {
+        // If before checkin, restart
+        setCheckin(d);
+        setCheckout(null);
+      } else {
+        setCheckout(d);
+        setSelectingCheckout(false);
+        setShowCalendar(false);
+      }
+    }
+  }
+
+  function clearDates() {
+    setCheckin(null);
+    setCheckout(null);
+    setSelectingCheckout(false);
+  }
+
+  const totalGuests = adults + children;
+  const guestLabel =
+    totalGuests === 1
+      ? "1 voyageur"
+      : `${totalGuests} voyageurs`;
+  const guestSublabel = infants > 0 ? `, ${infants} bébé${infants > 1 ? "s" : ""}` : "";
+
+  // Calculate nights and total
+  const nights = checkin && checkout
+    ? Math.round((checkout.getTime() - checkin.getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+
+  const nightlyRate = originalRent / 30;
+  const totalPrice = nights ? Math.round(nightlyRate * nights) : null;
+
+  function formatDateShort(d: Date) {
+    return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  }
 
   return (
     <div className="rounded-2xl border border-[#DDDDDD] bg-white p-6 shadow-[0_6px_16px_rgba(0,0,0,0.12)]">
@@ -231,77 +478,120 @@ function BookingCard({ property }: { property: PropertyDetail }) {
         </div>
       )}
 
-      {/* Divider */}
-      <div className="my-5 border-t border-[#EBEBEB]" />
-
-      {/* Details */}
-      <div className="space-y-3">
-        {property.surfaceArea && (
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 text-[#6A6A6A]">
-              <Ruler className="size-4" />
-              Surface
-            </span>
-            <span className="font-medium text-[#222222]">
-              {Number(property.surfaceArea)} m²
-            </span>
-          </div>
-        )}
-
-        {property.floor !== null && (
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 text-[#6A6A6A]">
-              <Building className="size-4" />
-              Étage
-            </span>
-            <span className="font-medium text-[#222222]">
-              {property.floor === 0 ? "RDC" : `${property.floor}e`}
-            </span>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between text-sm">
-          <span className="flex items-center gap-2 text-[#6A6A6A]">
-            <Sofa className="size-4" />
-            Ameublement
-          </span>
-          <span className="font-medium text-[#222222]">
-            {furnishingLabels[property.furnishing] || property.furnishing}
-          </span>
+      {/* ── Date Picker ── */}
+      <div className="relative mt-5" ref={calRef}>
+        <div
+          className={`grid grid-cols-2 overflow-hidden rounded-t-lg border ${showCalendar ? "border-[#222222]" : "border-[#B0B0B0]"}`}
+        >
+          <button
+            onClick={() => {
+              setShowCalendar(true);
+              setSelectingCheckout(false);
+            }}
+            className={`px-3 py-2.5 text-left transition-colors ${
+              showCalendar && !selectingCheckout ? "bg-[#F7F7F7]" : "hover:bg-[#F7F7F7]"
+            }`}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[#222222]">Arrivée</p>
+            <p className={`text-sm ${checkin ? "text-[#222222]" : "text-[#B0B0B0]"}`}>
+              {checkin ? formatDateShort(checkin) : "Ajouter"}
+            </p>
+          </button>
+          <button
+            onClick={() => {
+              setShowCalendar(true);
+              setSelectingCheckout(true);
+            }}
+            className={`border-l border-[#B0B0B0] px-3 py-2.5 text-left transition-colors ${
+              showCalendar && selectingCheckout ? "bg-[#F7F7F7]" : "hover:bg-[#F7F7F7]"
+            }`}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[#222222]">Départ</p>
+            <p className={`text-sm ${checkout ? "text-[#222222]" : "text-[#B0B0B0]"}`}>
+              {checkout ? formatDateShort(checkout) : "Ajouter"}
+            </p>
+          </button>
         </div>
 
-        {property.deposit && (
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 text-[#6A6A6A]">
-              <ShieldCheck className="size-4" />
-              Caution
-            </span>
-            <span className="font-medium text-[#222222]">
-              {formatRent(property.deposit)}
-            </span>
-          </div>
-        )}
+        {/* Guest selector trigger */}
+        <div ref={guestRef} className="relative">
+          <button
+            onClick={() => setShowGuests(!showGuests)}
+            className={`w-full rounded-b-lg border border-t-0 ${showGuests ? "border-[#222222]" : "border-[#B0B0B0]"} px-3 py-2.5 text-left transition-colors hover:bg-[#F7F7F7]`}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[#222222]">Voyageurs</p>
+            <p className="text-sm text-[#222222]">
+              {guestLabel}{guestSublabel}
+            </p>
+          </button>
 
-        {property.utilities && (
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 text-[#6A6A6A]">
-              <Flame className="size-4" />
-              Charges
-            </span>
-            <span className="font-medium text-[#222222]">
-              {formatRent(property.utilities)} / mois
-            </span>
+          {/* Guest dropdown */}
+          {showGuests && (
+            <div className="absolute left-0 right-0 top-full z-20 mt-2 rounded-xl border border-[#DDDDDD] bg-white p-4 shadow-[0_6px_16px_rgba(0,0,0,0.12)]">
+              <GuestRow label="Adultes" sublabel="13 ans et plus" value={adults} min={1} max={property.maxGuests} onChange={setAdults} />
+              <div className="border-t border-[#EBEBEB]" />
+              <GuestRow label="Enfants" sublabel="2 à 12 ans" value={children} min={0} max={Math.max(0, property.maxGuests - adults)} onChange={setChildren} />
+              <div className="border-t border-[#EBEBEB]" />
+              <GuestRow label="Bébés" sublabel="Moins de 2 ans" value={infants} min={0} max={5} onChange={setInfants} />
+            </div>
+          )}
+        </div>
+
+        {/* Calendar dropdown */}
+        {showCalendar && (
+          <div className="absolute left-0 right-0 top-full z-20 mt-2 rounded-xl border border-[#DDDDDD] bg-white p-4 shadow-[0_6px_16px_rgba(0,0,0,0.12)]">
+            <MiniCalendar
+              checkin={checkin}
+              checkout={checkout}
+              onSelect={handleDateSelect}
+            />
+            {(checkin || checkout) && (
+              <button
+                onClick={clearDates}
+                className="mt-3 text-xs font-semibold text-[#222222] underline"
+              >
+                Effacer les dates
+              </button>
+            )}
           </div>
         )}
       </div>
 
-      {/* Divider */}
-      <div className="my-5 border-t border-[#EBEBEB]" />
+      {/* ── Price Breakdown ── */}
+      {nights && totalPrice && (
+        <div className="mt-5 space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-[#6A6A6A] underline">
+              {formatRent(Math.round(nightlyRate))} x {nights} nuit{nights > 1 ? "s" : ""}
+            </span>
+            <span className="text-[#222222]">{formatRent(totalPrice)}</span>
+          </div>
+          {property.utilities && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-[#6A6A6A] underline">Charges estimées</span>
+              <span className="text-[#222222]">
+                {formatRent(Math.round(Number(property.utilities) * nights / 30))}
+              </span>
+            </div>
+          )}
+          <div className="border-t border-[#EBEBEB] pt-2">
+            <div className="flex items-center justify-between text-base font-semibold">
+              <span className="text-[#222222]">Total</span>
+              <span className="text-[#222222]">
+                {formatRent(
+                  totalPrice +
+                    (property.utilities ? Math.round(Number(property.utilities) * nights / 30) : 0)
+                )}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* CTA Buttons */}
+      {/* ── CTA ── */}
       <Link
-        href={`/p/${property.slug}/checkout`}
-        className="block w-full rounded-xl bg-[#FF385C] py-3.5 text-center text-base font-semibold text-white transition-colors hover:bg-[#E31C5F] active:scale-[0.98]"
+        href={`/p/${property.slug}/checkout${checkin && checkout ? `?checkin=${checkin.toISOString().split("T")[0]}&checkout=${checkout.toISOString().split("T")[0]}&adults=${adults}&children=${children}&infants=${infants}` : ""}`}
+        className="mt-5 block w-full rounded-xl bg-[#FF385C] py-3.5 text-center text-base font-semibold text-white transition-colors hover:bg-[#E31C5F] active:scale-[0.98]"
       >
         Réserver
       </Link>
