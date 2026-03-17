@@ -299,9 +299,12 @@ function BookingCard({ property }: { property: PropertyDetail }) {
       <div className="my-5 border-t border-[#EBEBEB]" />
 
       {/* CTA Buttons */}
-      <button className="w-full rounded-xl bg-[#FF385C] py-3.5 text-base font-semibold text-white transition-colors hover:bg-[#E31C5F] active:scale-[0.98]">
+      <Link
+        href={`/p/${property.slug}/checkout`}
+        className="block w-full rounded-xl bg-[#FF385C] py-3.5 text-center text-base font-semibold text-white transition-colors hover:bg-[#E31C5F] active:scale-[0.98]"
+      >
         Réserver
-      </button>
+      </Link>
 
       <button className="mt-3 w-full rounded-xl border border-[#222222] py-3.5 text-base font-semibold text-[#222222] transition-colors hover:bg-[#F7F7F7] active:scale-[0.98]">
         Contacter l&apos;agence
@@ -444,6 +447,18 @@ export default function PropertyDetailPage() {
       <div className="mx-auto max-w-7xl px-0 sm:px-5">
         <PhotoGallery property={property} />
       </div>
+
+      {/* ── "Perle rare" Banner (featured properties) ── */}
+      {property.isFeatured && (
+        <div className="mx-auto max-w-7xl px-5 mt-4">
+          <div className="flex items-center gap-3 rounded-xl bg-[#FFF0F3] border border-[#FFD6DE] px-5 py-3.5">
+            <span className="text-lg" role="img" aria-label="diamant">💎</span>
+            <p className="text-sm font-medium text-[#E31C5F]">
+              Perle rare ! Les réservations pour ce logement sont fréquentes.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── Content: Two Columns ── */}
       <div className="mx-auto max-w-7xl px-5 pb-24 sm:pb-12">
@@ -612,8 +627,8 @@ export default function PropertyDetailPage() {
         </div>
       </div>
 
-      {/* ── Mobile Bottom Booking Bar ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#EBEBEB] bg-white px-5 py-4 lg:hidden">
+      {/* ── Mobile Sticky Bottom Bar ── */}
+      <div className="fixed bottom-16 left-0 right-0 z-40 border-t border-[#EBEBEB] bg-white px-5 py-3 shadow-[0_-2px_10px_rgba(0,0,0,0.08)] sm:hidden">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-baseline gap-1.5">
@@ -638,10 +653,16 @@ export default function PropertyDetailPage() {
               )}
               <span className="text-sm text-[#6A6A6A]">/ mois</span>
             </div>
+            <p className="mt-0.5 text-xs text-[#6A6A6A]">
+              Annulation gratuite avant le check-in
+            </p>
           </div>
-          <button className="rounded-xl bg-[#FF385C] px-6 py-3 text-sm font-semibold text-white hover:bg-[#E31C5F] active:scale-[0.98] transition-all">
+          <Link
+            href={`/p/${property.slug}/checkout`}
+            className="rounded-xl bg-[#FF385C] px-6 py-3 text-sm font-semibold text-white hover:bg-[#E31C5F] active:scale-[0.98] transition-all"
+          >
             Réserver
-          </button>
+          </Link>
         </div>
       </div>
     </div>
