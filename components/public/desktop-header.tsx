@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 /* eslint-disable @next/next/no-img-element */
 import { Search, Globe, Menu, MapPin, Building2 } from "lucide-react";
@@ -58,10 +59,12 @@ export function DesktopHeader() {
   const [destination, setDestination] = useState("");
   const [type, setType] = useState("");
   const [activeTab, setActiveTab] = useState("logements");
+  const [selectedCityId, setSelectedCityId] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     fetch("/api/public/properties")
@@ -143,17 +146,21 @@ export function DesktopHeader() {
 
   function handleSelect(s: Suggestion) {
     if (s.type === "property" && s.slug) {
-      window.location.href = `/p/${s.slug}`;
-    } else {
+      router.push(`/p/${s.slug}`);
+    } else if (s.type === "city") {
       setDestination(s.label);
+      setSelectedCityId(s.value);
     }
     setShowSuggestions(false);
   }
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    // Scroll to top — filtering could be done via URL params
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const params = new URLSearchParams();
+    if (selectedCityId) params.set("city", selectedCityId);
+    else if (destination.trim()) params.set("search", destination.trim());
+    if (type) params.set("type", type);
+    router.push(`/?${params.toString()}`);
   }
 
   return (

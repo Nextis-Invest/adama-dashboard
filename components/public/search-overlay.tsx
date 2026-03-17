@@ -108,12 +108,19 @@ export function MobileSearchOverlay({
   function handleSelect(s: Suggestion) {
     if (s.type === "property" && s.slug) {
       router.push(`/p/${s.slug}`);
-    } else {
-      // Navigate to homepage with city filter
+    } else if (s.type === "city") {
       router.push(`/?city=${s.value}`);
     }
     onClose();
     setQuery("");
+  }
+
+  function handleSearchSubmit() {
+    if (query.trim()) {
+      router.push(`/?search=${encodeURIComponent(query.trim())}`);
+      onClose();
+      setQuery("");
+    }
   }
 
   if (!open) return null;
@@ -138,6 +145,7 @@ export function MobileSearchOverlay({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") handleSearchSubmit(); }}
             placeholder="Rechercher une ville, un logement..."
             className="w-full rounded-full border border-[#DDDDDD] bg-[#F7F7F7] py-3 pl-10 pr-10 text-sm text-[#222222] placeholder:text-[#B0B0B0] focus:border-[#222222] focus:outline-none"
           />

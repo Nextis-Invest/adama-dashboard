@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   MapPin,
   BedDouble,
@@ -312,17 +313,30 @@ interface DestinationCategory {
 }
 
 export default function HomePage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-2 border-[#FF385C] border-t-transparent" /></div>}>
+      <HomePageContent />
+    </Suspense>
+  );
+}
+
+function HomePageContent() {
+  const searchParams = useSearchParams();
+  const urlCity = searchParams.get("city") || "";
+  const urlSearch = searchParams.get("search") || "";
+  const urlType = searchParams.get("type") || "";
+
   const [properties, setProperties] = useState<Property[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState("");
+  const [activeCategory, setActiveCategory] = useState(urlType);
   const [destinations, setDestinations] = useState<DestinationCategory[]>([]);
   const [activeDestTab, setActiveDestTab] = useState("");
   const [curatedLists, setCuratedLists] = useState<CuratedList[]>([]);
 
   useEffect(() => {
     fetchProperties();
-  }, [activeCategory]);
+  }, [activeCategory, urlCity, urlSearch]);
 
   useEffect(() => {
     fetch("/api/public/destinations")
@@ -347,6 +361,8 @@ export default function HomePage() {
     setLoading(true);
     const params = new URLSearchParams();
     if (activeCategory) params.set("type", activeCategory);
+    if (urlCity) params.set("cityId", urlCity);
+    if (urlSearch) params.set("search", urlSearch);
 
     const res = await fetch(`/api/public/properties?${params}`);
     const json = await res.json();
