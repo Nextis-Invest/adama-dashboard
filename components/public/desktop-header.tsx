@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { fr } from "date-fns/locale";
 import { format, addMonths } from "date-fns";
 import type { DateRange } from "react-day-picker";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 
 /* ---------- Types ---------- */
 
@@ -496,14 +496,12 @@ export function DesktopHeader() {
 
           {/* ============ DROPDOWNS ============ */}
 
-          <AnimatePresence mode="wait">
           {/* Destination dropdown */}
           {activePanel === "destination" && (
             <motion.div
               key="destination"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               className="absolute left-0 top-full z-50 mt-3 w-full max-w-md rounded-3xl border border-[#EBEBEB] bg-white py-4 shadow-xl">
               <p className="mb-2 px-6 text-xs font-semibold text-[#222222]">
@@ -570,7 +568,6 @@ export function DesktopHeader() {
               key="dates"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               className="absolute left-1/2 top-full z-50 mt-3 w-[720px] -translate-x-1/2 rounded-3xl border border-[#EBEBEB] bg-white p-6 shadow-xl">
               {/* Tabs: Dates / Mois / Flexible */}
@@ -586,20 +583,13 @@ export function DesktopHeader() {
                     key={tab.key}
                     type="button"
                     onClick={() => setDateTab(tab.key)}
-                    className="relative rounded-full px-5 py-2 text-sm font-medium"
+                    className={`relative rounded-full px-5 py-2 text-sm font-medium transition-all duration-300 ${
+                      dateTab === tab.key
+                        ? "bg-[#222222] text-white shadow-sm"
+                        : "bg-transparent text-[#222222] hover:bg-[#DDDDDD]"
+                    }`}
                   >
-                    {dateTab === tab.key && (
-                      <motion.div
-                        layoutId="dateTabPill"
-                        className="absolute inset-0 rounded-full bg-[#222222]"
-                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                      />
-                    )}
-                    <span className={`relative z-10 transition-colors duration-200 ${
-                      dateTab === tab.key ? "text-white" : "text-[#6A6A6A] hover:text-[#222222]"
-                    }`}>
-                      {tab.label}
-                    </span>
+                    {tab.label}
                   </button>
                 ))}
               </div>
@@ -769,7 +759,6 @@ export function DesktopHeader() {
               key="guests"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               className="absolute right-0 top-full z-50 mt-3 w-96 rounded-3xl border border-[#EBEBEB] bg-white px-6 py-4 shadow-xl">
               <CounterRow
@@ -802,7 +791,6 @@ export function DesktopHeader() {
               />
             </motion.div>
           )}
-          </AnimatePresence>
         </div>
       </div>
     </header>
