@@ -10,6 +10,7 @@ import { fr } from "date-fns/locale";
 import { format, addMonths } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { motion } from "motion/react";
+import { useHeaderTab } from "@/lib/header-tab-context";
 
 /* ---------- Types ---------- */
 
@@ -53,6 +54,12 @@ const typeLabels: Record<string, string> = {
 
 const headerTabs = [
   { key: "logements", label: "Logements", icon: "/icons/apartment.png" },
+  {
+    key: "transfert",
+    label: "Transfert",
+    icon: "/icons/flight.png",
+    badge: "NOUVEAU",
+  },
   {
     key: "services",
     label: "Services",
@@ -135,8 +142,8 @@ export function DesktopHeader() {
   const [cities, setCities] = useState<City[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
 
-  // Row 1 state
-  const [activeTab, setActiveTab] = useState("logements");
+  // Row 1 state (shared via context)
+  const { activeTab, setActiveTab } = useHeaderTab();
 
   // Panel state
   const [activePanel, setActivePanel] = useState<Panel>(null);

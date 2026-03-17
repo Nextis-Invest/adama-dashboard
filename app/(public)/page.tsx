@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   MapPin,
   BedDouble,
@@ -13,6 +14,7 @@ import {
 } from "lucide-react";
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { useHeaderTab } from "@/lib/header-tab-context";
 
 interface Property {
   id: string;
@@ -134,22 +136,24 @@ const fallbackServices = [
   },
 ];
 
+/* ─── Cookie helpers for non-authenticated favorites ─── */
+function getFavoriteCookie(): string[] {
+  if (typeof document === "undefined") return [];
+  const match = document.cookie.match(/chinefy_favorites=([^;]*)/);
+  if (!match) return [];
+  try { return JSON.parse(decodeURIComponent(match[1])); } catch { return []; }
+}
+
+function setFavoriteCookie(ids: string[]) {
+  document.cookie = `chinefy_favorites=${encodeURIComponent(JSON.stringify(ids))};path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
+}
+
 /* ─── Favorite Button ─── */
-function FavButton({ propertyId }: { propertyId: string }) {
-  const [liked, setLiked] = useState(false);
-
-  useEffect(() => {
-    const favs: string[] = JSON.parse(localStorage.getItem("chinefy_favorites") || "[]");
-    setLiked(favs.includes(propertyId));
-  }, [propertyId]);
-
+function FavButton({ propertyId, isFavorite, onToggle }: { propertyId: string; isFavorite: boolean; onToggle: (id: string) => void }) {
   const toggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const favs: string[] = JSON.parse(localStorage.getItem("chinefy_favorites") || "[]");
-    const next = liked ? favs.filter((id) => id !== propertyId) : [...favs, propertyId];
-    localStorage.setItem("chinefy_favorites", JSON.stringify(next));
-    setLiked(!liked);
+    onToggle(propertyId);
   };
 
   return (
@@ -160,16 +164,16 @@ function FavButton({ propertyId }: { propertyId: string }) {
     >
       <Heart
         className={`size-6 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] transition-colors ${
-          liked ? "fill-[#FF385C] text-[#FF385C]" : "fill-black/50 text-white"
+          isFavorite ? "fill-[#FF385C] text-[#FF385C]" : "fill-black/50 text-white"
         }`}
-        strokeWidth={liked ? 0 : 2}
+        strokeWidth={isFavorite ? 0 : 2}
       />
     </button>
   );
 }
 
 /* ─── Horizontal Carousel Card ─── */
-function CarouselPropertyCard({ property }: { property: Property }) {
+function CarouselPropertyCard({ property, isFavorite, onToggleFavorite }: { property: Property; isFavorite: boolean; onToggleFavorite: (id: string) => void }) {
   return (
     <Link href={`/p/${property.slug}`} className="group block w-[72vw] shrink-0 sm:w-[300px]">
       <div className="overflow-hidden rounded-2xl">
@@ -186,7 +190,7 @@ function CarouselPropertyCard({ property }: { property: Property }) {
             </div>
           )}
 
-          <FavButton propertyId={property.id} />
+          <FavButton propertyId={property.id} isFavorite={isFavorite} onToggle={onToggleFavorite} />
 
           {property.isFeatured && (
             <div className="absolute top-3 left-3">
@@ -229,7 +233,7 @@ function CarouselPropertyCard({ property }: { property: Property }) {
 }
 
 /* ─── Grid Property Card (desktop) ─── */
-function GridPropertyCard({ property }: { property: Property }) {
+function GridPropertyCard({ property, isFavorite, onToggleFavorite }: { property: Property; isFavorite: boolean; onToggleFavorite: (id: string) => void }) {
   return (
     <Link href={`/p/${property.slug}`} className="group block">
       <div className="overflow-hidden rounded-2xl">
@@ -246,7 +250,7 @@ function GridPropertyCard({ property }: { property: Property }) {
             </div>
           )}
 
-          <FavButton propertyId={property.id} />
+          <FavButton propertyId={property.id} isFavorite={isFavorite} onToggle={onToggleFavorite} />
 
           {property.isFeatured && (
             <div className="absolute top-3 left-3">
@@ -292,9 +296,13 @@ function GridPropertyCard({ property }: { property: Property }) {
 function PropertyCarousel({
   title,
   properties,
+  favoriteIds,
+  onToggleFavorite,
 }: {
   title: string;
   properties: Property[];
+  favoriteIds: string[];
+  onToggleFavorite: (id: string) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -335,7 +343,7 @@ function PropertyCarousel({
         className="mt-4 flex gap-4 overflow-x-auto px-5 pb-2 scrollbar-none sm:px-0"
       >
         {properties.map((property) => (
-          <CarouselPropertyCard key={property.id} property={property} />
+          <CarouselPropertyCard key={property.id} property={property} isFavorite={favoriteIds.includes(property.id)} onToggleFavorite={onToggleFavorite} />
         ))}
       </div>
     </div>
@@ -368,6 +376,8 @@ export default function HomePage() {
 }
 
 function HomePageContent() {
+  const { activeTab } = useHeaderTab();
+  const { data: session, status: sessionStatus } = useSession();
   const searchParams = useSearchParams();
   const urlCity = searchParams.get("city") || "";
   const urlSearch = searchParams.get("search") || "";
@@ -381,6 +391,54 @@ function HomePageContent() {
   const [activeDestTab, setActiveDestTab] = useState("");
   const [curatedLists, setCuratedLists] = useState<CuratedList[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+
+  // Load favorites on mount / when session changes
+  useEffect(() => {
+    if (sessionStatus === "loading") return;
+    if (session?.user) {
+      // Authenticated: fetch from API
+      fetch("/api/favorites")
+        .then((r) => r.json())
+        .then((json) => {
+          if (json.success) {
+            setFavoriteIds(json.data.map((f: { propertyId: string }) => f.propertyId));
+          }
+        })
+        .catch(() => {});
+    } else {
+      // Not authenticated: read from cookie
+      setFavoriteIds(getFavoriteCookie());
+    }
+  }, [session, sessionStatus]);
+
+  const toggleFavorite = useCallback(async (propertyId: string) => {
+    const isFav = favoriteIds.includes(propertyId);
+    // Optimistic update
+    const nextIds = isFav ? favoriteIds.filter((id) => id !== propertyId) : [...favoriteIds, propertyId];
+    setFavoriteIds(nextIds);
+
+    if (session?.user) {
+      // Authenticated: call API
+      try {
+        const res = await fetch("/api/favorites", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ propertyId }),
+        });
+        const json = await res.json();
+        if (!json.success) {
+          // Revert on failure
+          setFavoriteIds(favoriteIds);
+        }
+      } catch {
+        setFavoriteIds(favoriteIds);
+      }
+    } else {
+      // Not authenticated: persist in cookie
+      setFavoriteCookie(nextIds);
+    }
+  }, [favoriteIds, session]);
 
   useEffect(() => {
     fetchProperties();
@@ -445,118 +503,230 @@ function HomePageContent() {
 
   return (
     <>
-      {/* ── Section 1: Category Tabs (Airbnb style horizontal scroll — centered) ── */}
-      <section className="border-b border-[#EBEBEB] bg-white">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex items-center justify-center gap-1 overflow-x-auto px-5 pt-3 pb-0 scrollbar-none sm:gap-2 sm:pt-4">
-            {categories.map((cat) => {
-              const isActive = activeCategory === cat.key;
-              return (
-                <button
-                  key={cat.key}
-                  onClick={() => setActiveCategory(cat.key)}
-                  className={`flex shrink-0 flex-col items-center gap-1 border-b-2 px-3 pb-3 pt-1 transition-colors sm:px-4 ${
-                    isActive
-                      ? "border-[#222222] text-[#222222]"
-                      : "border-transparent text-[#6A6A6A] hover:border-[#DDDDDD] hover:text-[#222222]"
-                  }`}
-                >
-                  <img
-                    src={cat.icon}
-                    alt={cat.label}
-                    className="size-7 object-contain sm:size-8"
-                  />
-                  <span className="text-[10px] font-medium whitespace-nowrap sm:text-xs">{cat.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Section 2: Featured Properties Carousel ── */}
-      {loading ? (
-        <section className="mx-auto max-w-7xl py-6 sm:py-8">
-          <div className="px-5 sm:px-0">
-            <div className="h-5 w-48 animate-pulse rounded bg-[#F7F7F7]" />
-          </div>
-          <div className="mt-4 flex gap-4 overflow-hidden px-5 sm:px-0">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="w-[72vw] shrink-0 animate-pulse sm:w-[300px]">
-                <div className="aspect-[20/19] rounded-2xl bg-[#F7F7F7]" />
-                <div className="mt-3 space-y-2">
-                  <div className="h-4 w-3/4 rounded bg-[#F7F7F7]" />
-                  <div className="h-3 w-1/2 rounded bg-[#F7F7F7]" />
-                  <div className="h-4 w-1/3 rounded bg-[#F7F7F7]" />
-                </div>
+      {/* ── Tab-conditional content ── */}
+      {activeTab === "logements" && (
+        <>
+          {/* ── Section 1: Category Tabs (Airbnb style horizontal scroll — centered) ── */}
+          <section className="border-b border-[#EBEBEB] bg-white">
+            <div className="mx-auto max-w-7xl">
+              <div className="flex items-center justify-center gap-1 overflow-x-auto px-5 pt-3 pb-0 scrollbar-none sm:gap-2 sm:pt-4">
+                {categories.map((cat) => {
+                  const isActive = activeCategory === cat.key;
+                  return (
+                    <button
+                      key={cat.key}
+                      onClick={() => setActiveCategory(cat.key)}
+                      className={`flex shrink-0 flex-col items-center gap-1 border-b-2 px-3 pb-3 pt-1 transition-colors sm:px-4 ${
+                        isActive
+                          ? "border-[#222222] text-[#222222]"
+                          : "border-transparent text-[#6A6A6A] hover:border-[#DDDDDD] hover:text-[#222222]"
+                      }`}
+                    >
+                      <img
+                        src={cat.icon}
+                        alt={cat.label}
+                        className="size-7 object-contain sm:size-8"
+                      />
+                      <span className="text-[10px] font-medium whitespace-nowrap sm:text-xs">{cat.label}</span>
+                    </button>
+                  );
+                })}
               </div>
-            ))}
-          </div>
-        </section>
-      ) : properties.length === 0 ? (
-        <section className="py-20 text-center">
-          <MapPin className="mx-auto size-12 text-[#DDDDDD]" />
-          <h2 className="font-display mt-4 text-xl font-semibold text-[#222222]">
-            Aucune propriété trouvée
-          </h2>
-          <p className="mt-2 text-sm text-[#6A6A6A]">
-            Essayez une autre catégorie.
-          </p>
-        </section>
-      ) : (
-        <div className="mx-auto max-w-7xl">
-          {/* Featured carousel */}
-          {featuredProperties.length > 0 && (
-            <section className="py-6 sm:py-8">
-              <PropertyCarousel
-                title="Coups de cœur des voyageurs"
-                properties={featuredProperties}
-              />
-            </section>
-          )}
-
-          {/* ── Section 3: Auto-generated city carousels ── */}
-          {Object.entries(propertiesByCity).map(([cityName, cityProperties]) => (
-            <section key={cityName} className="border-t border-[#EBEBEB] py-6 sm:py-8">
-              <PropertyCarousel
-                title={`Logements populaires · ${cityName}`}
-                properties={cityProperties}
-              />
-            </section>
-          ))}
-
-          {/* ── Section 3b: Admin curated lists ── */}
-          {curatedLists.map((list) => (
-            <section key={list.id} className="border-t border-[#EBEBEB] py-6 sm:py-8">
-              <PropertyCarousel
-                title={list.title}
-                properties={list.items
-                  .sort((a, b) => a.order - b.order)
-                  .map((item) => item.property)}
-              />
-            </section>
-          ))}
-
-          {/* ── Section 4: All Properties Grid (desktop) ── */}
-          <section className="border-t border-[#EBEBEB] py-8 sm:py-10">
-            <div className="px-5 sm:px-0">
-              <h2 className="font-display text-xl font-bold text-[#222222] sm:text-2xl">
-                {activeCategory
-                  ? `${typeLabels[activeCategory]}s disponibles`
-                  : "Tous les logements"}
-              </h2>
-              <p className="mt-1 text-sm text-[#6A6A6A]">
-                {properties.length} logement{properties.length > 1 ? "s" : ""} disponible{properties.length > 1 ? "s" : ""}
-              </p>
-            </div>
-
-            <div className="mt-6 grid gap-6 px-5 sm:grid-cols-2 sm:px-0 lg:grid-cols-3 xl:grid-cols-4">
-              {properties.map((property) => (
-                <GridPropertyCard key={property.id} property={property} />
-              ))}
             </div>
           </section>
-        </div>
+
+          {/* ── Section 2: Featured Properties Carousel ── */}
+          {loading ? (
+            <section className="mx-auto max-w-7xl py-6 sm:py-8">
+              <div className="px-5 sm:px-0">
+                <div className="h-5 w-48 animate-pulse rounded bg-[#F7F7F7]" />
+              </div>
+              <div className="mt-4 flex gap-4 overflow-hidden px-5 sm:px-0">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="w-[72vw] shrink-0 animate-pulse sm:w-[300px]">
+                    <div className="aspect-[20/19] rounded-2xl bg-[#F7F7F7]" />
+                    <div className="mt-3 space-y-2">
+                      <div className="h-4 w-3/4 rounded bg-[#F7F7F7]" />
+                      <div className="h-3 w-1/2 rounded bg-[#F7F7F7]" />
+                      <div className="h-4 w-1/3 rounded bg-[#F7F7F7]" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : properties.length === 0 ? (
+            <section className="py-20 text-center">
+              <MapPin className="mx-auto size-12 text-[#DDDDDD]" />
+              <h2 className="font-display mt-4 text-xl font-semibold text-[#222222]">
+                Aucune propriété trouvée
+              </h2>
+              <p className="mt-2 text-sm text-[#6A6A6A]">
+                Essayez une autre catégorie.
+              </p>
+            </section>
+          ) : (
+            <div className="mx-auto max-w-7xl">
+              {/* Featured carousel */}
+              {featuredProperties.length > 0 && (
+                <section className="py-6 sm:py-8">
+                  <PropertyCarousel
+                    title="Coups de cœur des voyageurs"
+                    properties={featuredProperties}
+                    favoriteIds={favoriteIds}
+                    onToggleFavorite={toggleFavorite}
+                  />
+                </section>
+              )}
+
+              {/* ── Section 3: Auto-generated city carousels ── */}
+              {Object.entries(propertiesByCity).map(([cityName, cityProperties]) => (
+                <section key={cityName} className="border-t border-[#EBEBEB] py-6 sm:py-8">
+                  <PropertyCarousel
+                    title={`Logements populaires · ${cityName}`}
+                    properties={cityProperties}
+                    favoriteIds={favoriteIds}
+                    onToggleFavorite={toggleFavorite}
+                  />
+                </section>
+              ))}
+
+              {/* ── Section 3b: Admin curated lists ── */}
+              {curatedLists.map((list) => (
+                <section key={list.id} className="border-t border-[#EBEBEB] py-6 sm:py-8">
+                  <PropertyCarousel
+                    title={list.title}
+                    properties={list.items
+                      .sort((a, b) => a.order - b.order)
+                      .map((item) => item.property)}
+                    favoriteIds={favoriteIds}
+                    onToggleFavorite={toggleFavorite}
+                  />
+                </section>
+              ))}
+
+              {/* ── Section 4: All Properties Grid (desktop) ── */}
+              <section className="border-t border-[#EBEBEB] py-8 sm:py-10">
+                <div className="px-5 sm:px-0">
+                  <h2 className="font-display text-xl font-bold text-[#222222] sm:text-2xl">
+                    {activeCategory
+                      ? `${typeLabels[activeCategory]}s disponibles`
+                      : "Tous les logements"}
+                  </h2>
+                  <p className="mt-1 text-sm text-[#6A6A6A]">
+                    {properties.length} logement{properties.length > 1 ? "s" : ""} disponible{properties.length > 1 ? "s" : ""}
+                  </p>
+                </div>
+
+                <div className="mt-6 grid gap-6 px-5 sm:grid-cols-2 sm:px-0 lg:grid-cols-3 xl:grid-cols-4">
+                  {properties.map((property) => (
+                    <GridPropertyCard key={property.id} property={property} isFavorite={favoriteIds.includes(property.id)} onToggleFavorite={toggleFavorite} />
+                  ))}
+                </div>
+              </section>
+            </div>
+          )}
+        </>
+      )}
+
+      {activeTab === "transfert" && (
+        <>
+          {/* Hero */}
+          <section className="bg-white py-10 sm:py-16">
+            <div className="mx-auto max-w-7xl px-5">
+              <h1 className="font-display text-2xl font-bold text-[#222222] sm:text-3xl">
+                Vos déplacements en Chine
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm text-[#6A6A6A] sm:text-base">
+                Réservez vos billets d&apos;avion, trains à grande vitesse, transferts aéroport et locations de voiture — tout depuis une seule plateforme.
+              </p>
+
+              {/* Transport categories */}
+              <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                  { icon: "/icons/flight.png", title: "Billets d'avion", desc: "Vols intérieurs et internationaux aux meilleurs tarifs. Compagnies chinoises et internationales." },
+                  { icon: "/icons/travel-map.png", title: "Train grande vitesse", desc: "Réseau CRH/Fuxing : voyagez entre les grandes villes chinoises en un temps record." },
+                  { icon: "/icons/location-pin.png", title: "Transfert aéroport", desc: "Chauffeur privé à votre arrivée. Transfert garanti vers votre logement, sans stress." },
+                  { icon: "/icons/car-rental.png", title: "Location de voiture", desc: "Véhicules avec ou sans chauffeur pour vos déplacements professionnels et personnels." },
+                ].map((item) => (
+                  <div
+                    key={item.title}
+                    className="group flex flex-col rounded-2xl border border-[#EBEBEB] bg-white p-6 transition-all hover:border-[#DDDDDD] hover:shadow-[0_6px_16px_rgba(0,0,0,0.12)]"
+                  >
+                    <img src={item.icon} alt={item.title} className="size-16 object-contain" />
+                    <h3 className="font-display mt-4 text-[15px] font-semibold text-[#222222]">{item.title}</h3>
+                    <p className="mt-2 flex-1 text-sm leading-relaxed text-[#6A6A6A]">{item.desc}</p>
+                    <button className="mt-5 w-full rounded-lg bg-[#222222] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#000000]">
+                      Demander un devis
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* How it works */}
+          <section className="border-t border-[#EBEBEB] bg-[#F7F7F7] py-10 sm:py-16">
+            <div className="mx-auto max-w-7xl px-5">
+              <h2 className="font-display text-center text-xl font-bold text-[#222222] sm:text-2xl">
+                Comment ça marche
+              </h2>
+              <div className="mt-10 grid gap-8 sm:grid-cols-3">
+                {[
+                  { step: "1", title: "Décrivez votre besoin", desc: "Indiquez votre trajet, dates et nombre de voyageurs. Nous cherchons les meilleures options." },
+                  { step: "2", title: "Recevez votre devis", desc: "En moins de 24h, recevez un devis détaillé avec plusieurs options de prix et d'horaires." },
+                  { step: "3", title: "Confirmez et voyagez", desc: "Validez votre choix, payez en ligne, et recevez vos billets ou confirmation de réservation." },
+                ].map((item) => (
+                  <div key={item.step} className="text-center">
+                    <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-[#FF385C] text-xl font-bold text-white">
+                      {item.step}
+                    </div>
+                    <h3 className="font-display mt-4 text-base font-semibold text-[#222222]">{item.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-[#6A6A6A]">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </>
+      )}
+
+      {activeTab === "services" && (
+        <>
+          <section className="bg-white py-10 sm:py-16">
+            <div className="mx-auto max-w-7xl px-5">
+              <h1 className="font-display text-2xl font-bold text-[#222222] sm:text-3xl">
+                Nos services
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm text-[#6A6A6A] sm:text-base">
+                Chinefy vous accompagne dans tous les aspects de votre installation et de vos affaires en Chine.
+              </p>
+
+              <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {(services.length > 0 ? services : fallbackServices).map((service) => (
+                  <div
+                    key={service.title}
+                    className="group flex flex-col rounded-2xl border border-[#EBEBEB] bg-white p-6 transition-all hover:border-[#DDDDDD] hover:shadow-[0_6px_16px_rgba(0,0,0,0.12)]"
+                  >
+                    <img
+                      src={service.icon || ""}
+                      alt={service.title}
+                      className="size-16 object-contain"
+                    />
+                    <h3 className="font-display mt-4 text-lg font-semibold text-[#222222]">
+                      {service.title}
+                    </h3>
+                    <p className="mt-2 flex-1 text-sm leading-relaxed text-[#6A6A6A]">
+                      {service.description}
+                    </p>
+                    <button className="mt-5 w-full rounded-lg border border-[#222222] px-4 py-3 text-sm font-semibold text-[#222222] transition-colors hover:bg-[#222222] hover:text-white">
+                      En savoir plus
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </>
       )}
 
       {/* ── Section 5: Destination Ideas (dynamic from dashboard) ── */}
