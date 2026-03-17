@@ -53,15 +53,15 @@ const typeLabels: Record<string, string> = {
 };
 
 const headerTabs = [
-  { key: "logements", label: "Logements", icon: "/icons/apartment.png" },
+  { key: "logements" as const, label: "Logements", icon: "/icons/apartment.png" },
   {
-    key: "transfert",
+    key: "transfert" as const,
     label: "Transfert",
     icon: "/icons/flight.png",
     badge: "NOUVEAU",
   },
   {
-    key: "services",
+    key: "services" as const,
     label: "Services",
     icon: "/icons/bell.png",
     badge: "NOUVEAU",
