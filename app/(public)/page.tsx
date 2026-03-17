@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, MapPin, BedDouble, Bath, Users, ChevronDown, Sparkles } from "lucide-react";
+import { Search, MapPin, BedDouble, Bath, Users, ChevronDown, Sparkles, ShieldCheck, KeyRound, Globe, Building2, HeartHandshake, Zap } from "lucide-react";
 import Link from "next/link";
+import { IsometricIcon, iconPresets } from "@/components/public/isometric-icon";
 
 interface Property {
   id: string;
@@ -265,6 +266,82 @@ export default function HomePage() {
           </div>
         </section>
       )}
+
+      {/* Features — 3D Isometric Icons */}
+      <section className="border-b border-[#EBEBEB] bg-white py-16">
+        <div className="mx-auto max-w-7xl px-5">
+          <div className="text-center">
+            <h2 className="font-display text-3xl font-bold text-[#222222]">
+              Pourquoi <span className="text-[#FF385C]">Adama</span> ?
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-[#6A6A6A]">
+              Une plateforme complète pour trouver et gérer votre logement en Chine, en toute confiance.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="flex flex-col items-center text-center">
+              <IsometricIcon icon={ShieldCheck} {...iconPresets.shield} size="lg" />
+              <h3 className="font-display mt-5 text-lg font-semibold text-[#222222]">
+                Logements vérifiés
+              </h3>
+              <p className="mt-2 text-sm text-[#6A6A6A]">
+                Chaque propriété est inspectée et validée par nos agences partenaires sur place.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center text-center">
+              <IsometricIcon icon={KeyRound} {...iconPresets.key} size="lg" />
+              <h3 className="font-display mt-5 text-lg font-semibold text-[#222222]">
+                Gestion simplifiée
+              </h3>
+              <p className="mt-2 text-sm text-[#6A6A6A]">
+                Paiements, contrats et communication — tout centralisé dans un seul tableau de bord.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center text-center">
+              <IsometricIcon icon={Globe} {...iconPresets.globe} size="lg" />
+              <h3 className="font-display mt-5 text-lg font-semibold text-[#222222]">
+                5 grandes villes
+              </h3>
+              <p className="mt-2 text-sm text-[#6A6A6A]">
+                Beijing, Shanghai, Guangzhou, Shenzhen et Chengdu — les meilleures opportunités.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center text-center">
+              <IsometricIcon icon={HeartHandshake} {...iconPresets.location} size="lg" />
+              <h3 className="font-display mt-5 text-lg font-semibold text-[#222222]">
+                Agences de confiance
+              </h3>
+              <p className="mt-2 text-sm text-[#6A6A6A]">
+                Réseau d'agences locales sélectionnées, bilingues et réactives.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center text-center">
+              <IsometricIcon icon={Zap} {...iconPresets.star} size="lg" />
+              <h3 className="font-display mt-5 text-lg font-semibold text-[#222222]">
+                Réductions longue durée
+              </h3>
+              <p className="mt-2 text-sm text-[#6A6A6A]">
+                Profitez de tarifs dégressifs : -5% par semaine, jusqu'à -25% à l'année.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center text-center">
+              <IsometricIcon icon={Building2} {...iconPresets.building} size="lg" />
+              <h3 className="font-display mt-5 text-lg font-semibold text-[#222222]">
+                Tous types de biens
+              </h3>
+              <p className="mt-2 text-sm text-[#6A6A6A]">
+                Studios, appartements, villas, lofts — meublés ou non, pour tous les budgets.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Property Grid */}
       <section className="mx-auto max-w-7xl px-5 py-10">
