@@ -159,42 +159,49 @@ export default function HomePage() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-[#222222] py-20 lg:py-28">
+      <section className="relative overflow-hidden bg-[#222222] py-16 sm:py-20 lg:py-28">
         <div className="absolute inset-0 bg-gradient-to-br from-[#FF385C]/20 via-transparent to-transparent" />
         <div className="relative mx-auto max-w-7xl px-5">
           <div className="max-w-2xl">
-            <h1 className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+            <h1 className="font-display text-3xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
               Votre logement en{" "}
               <span className="text-[#FF385C]">Chine</span>,{" "}
               simplifié.
             </h1>
-            <p className="mt-5 text-lg text-white/70 lg:text-xl">
+            <p className="mt-4 text-base text-white/70 sm:mt-5 sm:text-lg lg:text-xl">
               Découvrez notre sélection de propriétés dans les plus grandes villes chinoises. Appartements, villas, studios — tous vérifiés et gérés par nos agences partenaires.
             </p>
           </div>
 
-          {/* Search bar */}
+          {/* Airbnb-style search bar */}
           <form
             onSubmit={handleSearch}
-            className="mt-10 flex flex-col gap-3 rounded-2xl bg-white p-3 shadow-xl sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:p-2"
+            className="mt-8 sm:mt-10"
           >
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#6A6A6A]" />
-              <input
-                type="text"
-                placeholder="Rechercher un quartier, une ville..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-xl bg-transparent py-3 pl-12 pr-4 text-[15px] text-[#222222] placeholder:text-[#B0B0B0] focus:outline-none sm:rounded-full"
-              />
-            </div>
+            {/* Desktop: segmented pill */}
+            <div className="hidden rounded-full border border-[#DDDDDD] bg-white shadow-lg sm:flex sm:items-center">
+              {/* Destination segment */}
+              <div className="relative flex-1 py-3 pl-7 pr-4">
+                <label className="block text-xs font-bold text-[#222222]">Destination</label>
+                <input
+                  type="text"
+                  placeholder="Rechercher une destination"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="mt-0.5 w-full bg-transparent text-sm text-[#222222] placeholder:text-[#B0B0B0] focus:outline-none"
+                />
+              </div>
 
-            <div className="flex gap-2">
-              <div className="relative">
+              {/* Divider */}
+              <div className="h-8 w-px bg-[#DDDDDD]" />
+
+              {/* City segment */}
+              <div className="relative py-3 pl-6 pr-4">
+                <label className="block text-xs font-bold text-[#222222]">Ville</label>
                 <select
                   value={cityId}
                   onChange={(e) => setCityId(e.target.value)}
-                  className="appearance-none rounded-xl border border-[#EBEBEB] bg-[#F7F7F7] py-3 pl-4 pr-10 text-sm text-[#222222] focus:border-[#222222] focus:outline-none sm:rounded-full"
+                  className="mt-0.5 w-full appearance-none bg-transparent text-sm text-[#222222] focus:outline-none [&:not(:valid)]:text-[#B0B0B0]"
                 >
                   <option value="">Toutes les villes</option>
                   {cities.map((c) => (
@@ -203,14 +210,18 @@ export default function HomePage() {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-[#6A6A6A]" />
               </div>
 
-              <div className="relative">
+              {/* Divider */}
+              <div className="h-8 w-px bg-[#DDDDDD]" />
+
+              {/* Type segment */}
+              <div className="relative py-3 pl-6 pr-4">
+                <label className="block text-xs font-bold text-[#222222]">Type de bien</label>
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  className="appearance-none rounded-xl border border-[#EBEBEB] bg-[#F7F7F7] py-3 pl-4 pr-10 text-sm text-[#222222] focus:border-[#222222] focus:outline-none sm:rounded-full"
+                  className="mt-0.5 w-full appearance-none bg-transparent text-sm text-[#222222] focus:outline-none"
                 >
                   <option value="">Tous les types</option>
                   {Object.entries(typeLabels).map(([key, label]) => (
@@ -219,16 +230,76 @@ export default function HomePage() {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-[#6A6A6A]" />
+              </div>
+
+              {/* Search button */}
+              <div className="pr-2">
+                <button
+                  type="submit"
+                  className="flex size-12 items-center justify-center rounded-full bg-[#FF385C] text-white transition-all hover:bg-[#E31C5F] hover:shadow-md"
+                >
+                  <Search className="size-5" />
+                </button>
               </div>
             </div>
 
-            <button
-              type="submit"
-              className="rounded-xl bg-[#FF385C] px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#E31C5F] sm:rounded-full"
-            >
-              Rechercher
-            </button>
+            {/* Mobile: stacked card */}
+            <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-lg sm:hidden">
+              {/* Search input */}
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#6A6A6A]" />
+                <input
+                  type="text"
+                  placeholder="Rechercher une destination"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full rounded-xl border border-[#DDDDDD] bg-white py-3 pl-10 pr-4 text-sm text-[#222222] placeholder:text-[#B0B0B0] focus:border-[#222222] focus:outline-none"
+                />
+              </div>
+
+              {/* City + Type row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-[#222222]">Ville</label>
+                  <select
+                    value={cityId}
+                    onChange={(e) => setCityId(e.target.value)}
+                    className="w-full appearance-none rounded-xl border border-[#DDDDDD] bg-white px-3 py-2.5 text-sm text-[#222222] focus:border-[#222222] focus:outline-none"
+                  >
+                    <option value="">Toutes</option>
+                    {cities.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.pinyin}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-[#222222]">Type</label>
+                  <select
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    className="w-full appearance-none rounded-xl border border-[#DDDDDD] bg-white px-3 py-2.5 text-sm text-[#222222] focus:border-[#222222] focus:outline-none"
+                  >
+                    <option value="">Tous</option>
+                    {Object.entries(typeLabels).map(([key, label]) => (
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Search button */}
+              <button
+                type="submit"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#FF385C] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#E31C5F]"
+              >
+                <Search className="size-4" />
+                Rechercher
+              </button>
+            </div>
           </form>
         </div>
       </section>
