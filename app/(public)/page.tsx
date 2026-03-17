@@ -703,8 +703,9 @@ function HomePageContent() {
 
               <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {(services.length > 0 ? services : fallbackServices).map((service) => (
-                  <div
+                  <Link
                     key={service.title}
+                    href={`/services/${service.slug}`}
                     className="group flex flex-col rounded-2xl border border-[#EBEBEB] bg-white p-6 transition-all hover:border-[#DDDDDD] hover:shadow-[0_6px_16px_rgba(0,0,0,0.12)]"
                   >
                     <img
@@ -718,10 +719,10 @@ function HomePageContent() {
                     <p className="mt-2 flex-1 text-sm leading-relaxed text-[#6A6A6A]">
                       {service.description}
                     </p>
-                    <button className="mt-5 w-full rounded-lg border border-[#222222] px-4 py-3 text-sm font-semibold text-[#222222] transition-colors hover:bg-[#222222] hover:text-white">
+                    <span className="mt-5 block w-full rounded-lg border border-[#222222] px-4 py-3 text-center text-sm font-semibold text-[#222222] transition-colors group-hover:bg-[#222222] group-hover:text-white">
                       En savoir plus
-                    </button>
-                  </div>
+                    </span>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -787,8 +788,9 @@ function HomePageContent() {
 
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {(services.length > 0 ? services : fallbackServices).map((service) => (
-              <div
+              <Link
                 key={service.title}
+                href={`/services/${service.slug}`}
                 className="group rounded-2xl border border-[#EBEBEB] bg-white p-5 transition-all hover:border-[#DDDDDD] hover:shadow-[0_6px_16px_rgba(0,0,0,0.12)]"
               >
                 <img
@@ -802,7 +804,7 @@ function HomePageContent() {
                 <p className="mt-1.5 text-sm leading-relaxed text-[#6A6A6A]">
                   {service.description}
                 </p>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

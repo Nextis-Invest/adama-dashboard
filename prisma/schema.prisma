@@ -250,6 +250,11 @@ model Service {
   slug        String  @unique
   description String?
   icon        String?
+  coverImage  String?
+  content     String? // Long description / rich text
+  features    String[] @default([]) // List of key features
+  ctaLabel    String?  // Custom CTA button text
+  ctaHref     String?  // Custom CTA link
   order       Int     @default(0)
   isActive    Boolean @default(true)
 
