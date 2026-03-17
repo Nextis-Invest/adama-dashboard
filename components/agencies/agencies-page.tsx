@@ -71,7 +71,7 @@ async function fetchAgencies(params: {
   const res = await fetch(`/api/agencies?${query}`);
   if (!res.ok) throw new Error("Erreur lors du chargement");
   const json = await res.json();
-  return json.data;
+  return json.data ?? [];
 }
 
 async function fetchCities(): Promise<City[]> {
