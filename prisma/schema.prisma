@@ -1,0 +1,274 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ──────────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  AGENT
+  VIEWER
+}
+
+enum AgencyStatus {
+  ACTIVE
+  PAUSED
+  TERMINATED
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  ROOM
+  STUDIO
+  VILLA
+  LOFT
+}
+
+enum ListingType {
+  ENTIRE_PLACE
+  PRIVATE_ROOM
+  SHARED_ROOM
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  RENTED
+  MAINTENANCE
+  OFFLINE
+}
+
+enum FurnishingStatus {
+  FURNISHED
+  SEMI_FURNISHED
+  UNFURNISHED
+}
+
+enum PaymentStatus {
+  PAID
+  PENDING
+  OVERDUE
+  PARTIAL
+}
+
+// ─── User ───────────────────────────────────────────────────
+
+model User {
+  id                String    @id @default(cuid())
+  name              String
+  email             String    @unique
+  password          String?
+  phone             String?
+  role              UserRole  @default(VIEWER)
+  agencyId          String?
+  verificationToken String?
+
+  agency Agency? @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+
+  sentMessages              Message[]                  @relation("MessageSender")
+  conversationParticipants  ConversationParticipant[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// ─── City ───────────────────────────────────────────────────
+
+model City {
+  id       String  @id @default(cuid())
+  name     String  // 中文 name
+  pinyin   String  // English romanization
+  province String
+  isActive Boolean @default(true)
+
+  agencies   Agency[]
+  properties Property[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, province])
+  @@map("cities")
+}
+
+// ─── Agency ─────────────────────────────────────────────────
+
+model Agency {
+  id            String       @id @default(cuid())
+  name          String
+  cityId        String
+  address       String?
+  email         String?
+  phone         String?
+  contactPerson String?
+  status        AgencyStatus @default(ACTIVE)
+  notes         String?
+
+  city       City       @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  users      User[]
+  properties Property[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("agencies")
+}
+
+// ─── Property (Airbnb-style listing) ────────────────────────
+
+model Property {
+  id          String         @id @default(cuid())
+  title       String
+  slug        String         @unique
+  type        PropertyType
+  listingType ListingType
+  status      PropertyStatus @default(AVAILABLE)
+
+  // Relations
+  agencyId String
+  cityId   String
+  agency   Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  city     City   @relation(fields: [cityId], references: [id])
+
+  // Location
+  address   String
+  district  String?
+  floor     Int?
+  building  String?
+  latitude  Decimal? @db.Decimal(10, 7)
+  longitude Decimal? @db.Decimal(10, 7)
+
+  // Characteristics
+  surfaceArea Decimal?         @db.Decimal(10, 2)
+  bedrooms    Int              @default(1)
+  beds        Int              @default(1)
+  bathrooms   Int              @default(1)
+  maxGuests   Int              @default(2)
+  totalRooms  Int?
+  furnishing  FurnishingStatus @default(FURNISHED)
+
+  // Amenities (flexible array)
+  amenities String[] @default([])
+
+  // Financial
+  monthlyRent    Decimal  @db.Decimal(10, 2)
+  deposit        Decimal? @db.Decimal(10, 2)
+  commissionRate Decimal  @db.Decimal(5, 2)
+  utilities      Decimal? @db.Decimal(10, 2)
+
+  // Duration-based discounts (Airbnb style)
+  discountWeekly    Decimal? @db.Decimal(5, 2)
+  discountBiweekly  Decimal? @db.Decimal(5, 2)
+  discountMonthly   Decimal? @db.Decimal(5, 2)
+  discountQuarterly Decimal? @db.Decimal(5, 2)
+  discountYearly    Decimal? @db.Decimal(5, 2)
+
+  // Contract
+  leaseStartDate   DateTime?
+  leaseEndDate     DateTime?
+  minLeaseDuration Int?
+  contractRef      String?
+
+  // Media
+  photos       String[] @default([])
+  coverPhoto   String?
+  description  String?
+  descriptionCn String?
+
+  // Meta
+  notes      String?
+  isFeatured Boolean @default(false)
+
+  payments      Payment[]
+  conversations Conversation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agencyId])
+  @@index([cityId])
+  @@index([status])
+  @@index([type])
+  @@index([listingType])
+  @@map("properties")
+}
+
+// ─── Payment ────────────────────────────────────────────────
+
+model Payment {
+  id          String        @id @default(cuid())
+  propertyId  String
+  period      DateTime      // 1st of the month
+  amountDue   Decimal       @db.Decimal(10, 2)
+  amountPaid  Decimal       @default(0) @db.Decimal(10, 2)
+  commission  Decimal       @db.Decimal(10, 2)
+  dueDate     DateTime
+  paymentDate DateTime?
+  status      PaymentStatus @default(PENDING)
+  notes       String?
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([propertyId, period])
+  @@map("payments")
+}
+
+// ─── Messaging ──────────────────────────────────────────────
+
+model Conversation {
+  id         String  @id @default(cuid())
+  subject    String?
+  propertyId String?
+
+  property     Property?                @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             String    @id @default(cuid())
+  conversationId String
+  userId         String
+  lastReadAt     DateTime?
+  joinedAt       DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String
+  isRead         Boolean  @default(false)
+  attachments    String[] @default([])
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+  @@map("messages")
+}
