@@ -388,10 +388,10 @@ export function DesktopHeader() {
         <div ref={searchBarRef} className="relative">
           {/* Search pill */}
           <div
-            className={`relative flex items-center rounded-full border bg-white transition-all ${
+            className={`relative flex items-center rounded-full border transition-all duration-300 ${
               isExpanded
-                ? "border-[#DDDDDD] shadow-lg"
-                : "border-[#DDDDDD] shadow-sm hover:shadow-md"
+                ? "border-[#DDDDDD] bg-[#EBEBEB] shadow-lg"
+                : "border-[#DDDDDD] bg-white shadow-sm hover:shadow-md"
             }`}
           >
             {/* Segment 1: Destination */}
@@ -401,13 +401,16 @@ export function DesktopHeader() {
                 togglePanel("destination");
                 setTimeout(() => inputRef.current?.focus(), 50);
               }}
-              className={`relative flex flex-1 flex-col rounded-full py-3.5 pl-7 pr-4 text-left transition-colors ${
-                activePanel === "destination"
-                  ? "bg-white shadow-md"
-                  : "hover:bg-[#EBEBEB]"
-              }`}
+              className="relative flex flex-1 flex-col rounded-full py-3.5 pl-7 pr-4 text-left"
             >
-              <span className={`text-xs font-bold transition-colors ${activePanel === "destination" ? "text-[#222222]" : activePanel ? "text-[#B0B0B0]" : "text-[#222222]"}`}>Destination</span>
+              {activePanel === "destination" && (
+                <motion.div
+                  layoutId="searchSegmentPill"
+                  className="absolute inset-0 rounded-full bg-white shadow-[0_1px_6px_rgba(0,0,0,0.1),0_4px_12px_rgba(0,0,0,0.08)]"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className={`relative z-10 text-xs font-bold transition-colors duration-200 ${activePanel === "destination" ? "text-[#222222]" : activePanel ? "text-[#929292]" : "text-[#222222]"}`}>Destination</span>
               {activePanel === "destination" ? (
                 <input
                   ref={inputRef}
@@ -419,13 +422,13 @@ export function DesktopHeader() {
                     setSelectedCityId("");
                   }}
                   onClick={(e) => e.stopPropagation()}
-                  className="mt-0.5 w-full bg-transparent text-sm text-[#222222] placeholder:text-[#B0B0B0] focus:outline-none"
+                  className="relative z-10 mt-0.5 w-full bg-transparent text-sm text-[#222222] placeholder:text-[#B0B0B0] focus:outline-none"
                   autoComplete="off"
                 />
               ) : (
                 <span
-                  className={`mt-0.5 truncate text-sm transition-colors ${
-                    activePanel ? "text-[#B0B0B0]" : selectedCityId ? "text-[#222222]" : "text-[#6A6A6A]"
+                  className={`relative z-10 mt-0.5 truncate text-sm transition-colors duration-200 ${
+                    activePanel ? "text-[#929292]" : selectedCityId ? "text-[#222222]" : "text-[#6A6A6A]"
                   }`}
                 >
                   {destinationSublabel}
@@ -437,18 +440,21 @@ export function DesktopHeader() {
             <button
               type="button"
               onClick={() => togglePanel("dates")}
-              className={`flex flex-1 flex-col rounded-full py-3.5 px-6 text-left transition-colors ${
-                activePanel === "dates"
-                  ? "bg-white shadow-md"
-                  : "hover:bg-[#EBEBEB]"
-              }`}
+              className="relative flex flex-1 flex-col rounded-full py-3.5 px-6 text-left"
             >
-              <span className={`text-xs font-bold transition-colors ${activePanel === "dates" ? "text-[#222222]" : activePanel ? "text-[#B0B0B0]" : "text-[#222222]"}`}>
+              {activePanel === "dates" && (
+                <motion.div
+                  layoutId="searchSegmentPill"
+                  className="absolute inset-0 rounded-full bg-white shadow-[0_1px_6px_rgba(0,0,0,0.1),0_4px_12px_rgba(0,0,0,0.08)]"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className={`relative z-10 text-xs font-bold transition-colors duration-200 ${activePanel === "dates" ? "text-[#222222]" : activePanel ? "text-[#929292]" : "text-[#222222]"}`}>
                 {activePanel === "dates" ? "Quand" : "Dates"}
               </span>
               <span
-                className={`mt-0.5 truncate text-sm transition-colors ${
-                  activePanel && activePanel !== "dates" ? "text-[#B0B0B0]" : dateRange?.from ? "text-[#222222]" : "text-[#6A6A6A]"
+                className={`relative z-10 mt-0.5 truncate text-sm transition-colors duration-200 ${
+                  activePanel && activePanel !== "dates" ? "text-[#929292]" : dateRange?.from ? "text-[#222222]" : "text-[#6A6A6A]"
                 }`}
               >
                 {datesSublabel}
@@ -459,16 +465,19 @@ export function DesktopHeader() {
             <button
               type="button"
               onClick={() => togglePanel("guests")}
-              className={`flex flex-1 flex-col rounded-full py-3.5 pl-6 pr-2 text-left transition-colors ${
-                activePanel === "guests"
-                  ? "bg-white shadow-md"
-                  : "hover:bg-[#EBEBEB]"
-              }`}
+              className="relative flex flex-1 flex-col rounded-full py-3.5 pl-6 pr-2 text-left"
             >
-              <span className={`text-xs font-bold transition-colors ${activePanel === "guests" ? "text-[#222222]" : activePanel ? "text-[#B0B0B0]" : "text-[#222222]"}`}>Voyageurs</span>
+              {activePanel === "guests" && (
+                <motion.div
+                  layoutId="searchSegmentPill"
+                  className="absolute inset-0 rounded-full bg-white shadow-[0_1px_6px_rgba(0,0,0,0.1),0_4px_12px_rgba(0,0,0,0.08)]"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className={`relative z-10 text-xs font-bold transition-colors duration-200 ${activePanel === "guests" ? "text-[#222222]" : activePanel ? "text-[#929292]" : "text-[#222222]"}`}>Voyageurs</span>
               <span
-                className={`mt-0.5 truncate text-sm transition-colors ${
-                  activePanel && activePanel !== "guests" ? "text-[#B0B0B0]" : adults > 0 || children > 0 ? "text-[#222222]" : "text-[#6A6A6A]"
+                className={`relative z-10 mt-0.5 truncate text-sm transition-colors duration-200 ${
+                  activePanel && activePanel !== "guests" ? "text-[#929292]" : adults > 0 || children > 0 ? "text-[#222222]" : "text-[#6A6A6A]"
                 }`}
               >
                 {guestsSublabel}
@@ -476,7 +485,7 @@ export function DesktopHeader() {
             </button>
 
             {/* Search button */}
-            <div className="shrink-0 pr-2.5">
+            <div className="relative z-10 shrink-0 pr-2.5">
               <button
                 type="button"
                 onClick={handleSearch}
