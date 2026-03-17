@@ -4,7 +4,8 @@
 import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff, Loader2, Building2 } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 export default function LoginPage() {
   return (
@@ -46,14 +47,22 @@ function LoginScreen() {
   }
 
   return (
-    <div className="flex min-h-screen w-full">
+    <div className="font-display flex min-h-screen w-full">
+      {/* Back button */}
+      <Link
+        href="/"
+        className="absolute left-5 top-5 z-10 flex size-10 items-center justify-center rounded-full border border-[#DDDDDD] bg-white text-[#222222] shadow-sm transition-colors hover:bg-[#F7F7F7] lg:border-white/20 lg:bg-white/10 lg:text-white lg:shadow-none lg:backdrop-blur-sm lg:hover:bg-white/20"
+      >
+        <ArrowLeft className="size-5" />
+      </Link>
+
       {/* Left side — Hero */}
       <div className="hidden flex-1 items-center justify-center bg-gradient-to-br from-[#222222] via-[#460a1a] to-[#FF385C] p-12 lg:flex">
         <div className="max-w-lg text-white">
-          <span className="mb-8 inline-block text-4xl font-black tracking-tight text-white">
+          <span className="font-display mb-8 inline-block text-4xl font-black tracking-tight text-white">
             CHINEFY
           </span>
-          <h1 className="mb-6 text-5xl font-bold leading-tight xl:text-6xl">
+          <h1 className="font-display mb-6 text-5xl font-bold leading-tight xl:text-6xl">
             Trouvez votre logement idéal en Chine.
           </h1>
           <p className="text-lg leading-relaxed text-white/80">
@@ -64,15 +73,15 @@ function LoginScreen() {
           {/* Stats */}
           <div className="mt-10 flex gap-8">
             <div>
-              <p className="text-3xl font-bold">500+</p>
+              <p className="font-display text-3xl font-bold">500+</p>
               <p className="text-sm text-white/60">Logements</p>
             </div>
             <div>
-              <p className="text-3xl font-bold">5</p>
+              <p className="font-display text-3xl font-bold">5</p>
               <p className="text-sm text-white/60">Villes</p>
             </div>
             <div>
-              <p className="text-3xl font-bold">8</p>
+              <p className="font-display text-3xl font-bold">8</p>
               <p className="text-sm text-white/60">Services</p>
             </div>
           </div>
@@ -84,10 +93,10 @@ function LoginScreen() {
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="mb-8 text-center lg:text-left">
-            <span className="mb-4 inline-block text-2xl font-black tracking-tight text-[#FF385C]">
+            <span className="font-display mb-4 inline-block text-2xl font-black tracking-tight text-[#FF385C]">
               CHINEFY
             </span>
-            <h2 className="text-3xl font-bold text-[#222222]">Bon retour</h2>
+            <h2 className="font-display text-3xl font-bold text-[#222222]">Bon retour</h2>
             <p className="mt-1 text-[#6A6A6A]">
               Connectez-vous pour accéder au tableau de bord
             </p>
