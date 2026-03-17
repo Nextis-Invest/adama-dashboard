@@ -9,6 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { fr } from "date-fns/locale";
 import { format, addMonths } from "date-fns";
 import type { DateRange } from "react-day-picker";
+import { motion, AnimatePresence } from "motion/react";
 
 /* ---------- Types ---------- */
 
@@ -400,13 +401,13 @@ export function DesktopHeader() {
                 togglePanel("destination");
                 setTimeout(() => inputRef.current?.focus(), 50);
               }}
-              className={`flex flex-1 flex-col rounded-full py-3.5 pl-7 pr-4 text-left transition-colors ${
+              className={`relative flex flex-1 flex-col rounded-full py-3.5 pl-7 pr-4 text-left transition-colors ${
                 activePanel === "destination"
                   ? "bg-white shadow-md"
                   : "hover:bg-[#EBEBEB]"
               }`}
             >
-              <span className="text-xs font-bold text-[#222222]">Destination</span>
+              <span className={`text-xs font-bold transition-colors ${activePanel === "destination" ? "text-[#222222]" : activePanel ? "text-[#B0B0B0]" : "text-[#222222]"}`}>Destination</span>
               {activePanel === "destination" ? (
                 <input
                   ref={inputRef}
@@ -423,17 +424,14 @@ export function DesktopHeader() {
                 />
               ) : (
                 <span
-                  className={`mt-0.5 truncate text-sm ${
-                    selectedCityId ? "text-[#222222]" : "text-[#6A6A6A]"
+                  className={`mt-0.5 truncate text-sm transition-colors ${
+                    activePanel ? "text-[#B0B0B0]" : selectedCityId ? "text-[#222222]" : "text-[#6A6A6A]"
                   }`}
                 >
                   {destinationSublabel}
                 </span>
               )}
             </button>
-
-            {/* Divider */}
-            <div className="h-9 w-px shrink-0 bg-[#DDDDDD]" />
 
             {/* Segment 2: Dates */}
             <button
@@ -445,20 +443,17 @@ export function DesktopHeader() {
                   : "hover:bg-[#EBEBEB]"
               }`}
             >
-              <span className="text-xs font-bold text-[#222222]">
+              <span className={`text-xs font-bold transition-colors ${activePanel === "dates" ? "text-[#222222]" : activePanel ? "text-[#B0B0B0]" : "text-[#222222]"}`}>
                 {activePanel === "dates" ? "Quand" : "Dates"}
               </span>
               <span
-                className={`mt-0.5 truncate text-sm ${
-                  dateRange?.from ? "text-[#222222]" : "text-[#6A6A6A]"
+                className={`mt-0.5 truncate text-sm transition-colors ${
+                  activePanel && activePanel !== "dates" ? "text-[#B0B0B0]" : dateRange?.from ? "text-[#222222]" : "text-[#6A6A6A]"
                 }`}
               >
                 {datesSublabel}
               </span>
             </button>
-
-            {/* Divider */}
-            <div className="h-9 w-px shrink-0 bg-[#DDDDDD]" />
 
             {/* Segment 3: Guests */}
             <button
@@ -470,10 +465,10 @@ export function DesktopHeader() {
                   : "hover:bg-[#EBEBEB]"
               }`}
             >
-              <span className="text-xs font-bold text-[#222222]">Voyageurs</span>
+              <span className={`text-xs font-bold transition-colors ${activePanel === "guests" ? "text-[#222222]" : activePanel ? "text-[#B0B0B0]" : "text-[#222222]"}`}>Voyageurs</span>
               <span
-                className={`mt-0.5 truncate text-sm ${
-                  adults > 0 || children > 0 ? "text-[#222222]" : "text-[#6A6A6A]"
+                className={`mt-0.5 truncate text-sm transition-colors ${
+                  activePanel && activePanel !== "guests" ? "text-[#B0B0B0]" : adults > 0 || children > 0 ? "text-[#222222]" : "text-[#6A6A6A]"
                 }`}
               >
                 {guestsSublabel}
@@ -501,9 +496,16 @@ export function DesktopHeader() {
 
           {/* ============ DROPDOWNS ============ */}
 
+          <AnimatePresence mode="wait">
           {/* Destination dropdown */}
           {activePanel === "destination" && (
-            <div className="absolute left-0 top-full z-50 mt-3 w-full max-w-md rounded-3xl border border-[#EBEBEB] bg-white py-4 shadow-xl">
+            <motion.div
+              key="destination"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="absolute left-0 top-full z-50 mt-3 w-full max-w-md rounded-3xl border border-[#EBEBEB] bg-white py-4 shadow-xl">
               <p className="mb-2 px-6 text-xs font-semibold text-[#222222]">
                 Suggestions de destinations
               </p>
@@ -559,14 +561,20 @@ export function DesktopHeader() {
                   </p>
                 )}
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Dates dropdown */}
           {activePanel === "dates" && (
-            <div className="absolute left-1/2 top-full z-50 mt-3 w-[720px] -translate-x-1/2 rounded-3xl border border-[#EBEBEB] bg-white p-6 shadow-xl">
+            <motion.div
+              key="dates"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="absolute left-1/2 top-full z-50 mt-3 w-[720px] -translate-x-1/2 rounded-3xl border border-[#EBEBEB] bg-white p-6 shadow-xl">
               {/* Tabs: Dates / Mois / Flexible */}
-              <div className="mb-5 flex items-center justify-center gap-1.5">
+              <div className="mb-5 flex items-center justify-center gap-1.5 rounded-full bg-[#EBEBEB] p-1">
                 {(
                   [
                     { key: "dates", label: "Dates" },
@@ -578,13 +586,20 @@ export function DesktopHeader() {
                     key={tab.key}
                     type="button"
                     onClick={() => setDateTab(tab.key)}
-                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                      dateTab === tab.key
-                        ? "bg-[#222222] text-white"
-                        : "bg-[#EBEBEB] text-[#222222] hover:bg-[#DDDDDD]"
-                    }`}
+                    className="relative rounded-full px-5 py-2 text-sm font-medium"
                   >
-                    {tab.label}
+                    {dateTab === tab.key && (
+                      <motion.div
+                        layoutId="dateTabPill"
+                        className="absolute inset-0 rounded-full bg-[#222222]"
+                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                      />
+                    )}
+                    <span className={`relative z-10 transition-colors duration-200 ${
+                      dateTab === tab.key ? "text-white" : "text-[#6A6A6A] hover:text-[#222222]"
+                    }`}>
+                      {tab.label}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -745,12 +760,18 @@ export function DesktopHeader() {
                   </div>
                 </div>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* Guests dropdown */}
           {activePanel === "guests" && (
-            <div className="absolute right-0 top-full z-50 mt-3 w-96 rounded-3xl border border-[#EBEBEB] bg-white px-6 py-4 shadow-xl">
+            <motion.div
+              key="guests"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="absolute right-0 top-full z-50 mt-3 w-96 rounded-3xl border border-[#EBEBEB] bg-white px-6 py-4 shadow-xl">
               <CounterRow
                 label="Adultes"
                 sublabel="13 ans et plus"
@@ -779,8 +800,9 @@ export function DesktopHeader() {
                 onChange={setPets}
                 link="Vous voyagez avec un animal d'assistance ?"
               />
-            </div>
+            </motion.div>
           )}
+          </AnimatePresence>
         </div>
       </div>
     </header>
