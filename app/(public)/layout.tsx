@@ -1,18 +1,27 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { Search, Heart, User, SlidersHorizontal } from "lucide-react";
 import { DesktopHeader } from "@/components/public/desktop-header";
+import { MobileSearchOverlay } from "@/components/public/search-overlay";
 
 export default function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [searchOpen, setSearchOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-white pb-16 sm:pb-0">
       {/* Mobile sticky search header — Airbnb style */}
       <header className="sticky top-0 z-50 bg-white px-4 pb-3 pt-3 shadow-sm sm:hidden">
         <div className="flex items-center gap-3">
-          <button className="flex flex-1 items-center gap-3 rounded-full border border-[#DDDDDD] bg-white px-4 py-2.5 shadow-sm">
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="flex flex-1 items-center gap-3 rounded-full border border-[#DDDDDD] bg-white px-4 py-2.5 shadow-sm"
+          >
             <Search className="size-4 shrink-0 text-[#222222]" />
             <div className="min-w-0 text-left">
               <p className="text-[13px] font-semibold text-[#222222]">Où allez-vous ?</p>
@@ -21,7 +30,10 @@ export default function PublicLayout({
               </p>
             </div>
           </button>
-          <button className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#DDDDDD]">
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#DDDDDD]"
+          >
             <SlidersHorizontal className="size-4 text-[#222222]" />
           </button>
         </div>
@@ -29,6 +41,9 @@ export default function PublicLayout({
 
       {/* Desktop header with search bar */}
       <DesktopHeader />
+
+      {/* Mobile search overlay */}
+      <MobileSearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       {children}
 

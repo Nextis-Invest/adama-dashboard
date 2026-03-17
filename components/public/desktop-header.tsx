@@ -1,19 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 /* eslint-disable @next/next/no-img-element */
-import {
-  Building2,
-  Search,
-  Globe,
-  Menu,
-} from "lucide-react";
+import { Search, Globe, Menu, MapPin, Building2 } from "lucide-react";
 
 interface City {
   id: string;
   name: string;
   pinyin: string;
+}
+
+interface Property {
+  id: string;
+  title: string;
+  slug: string;
+  type: string;
+  city: { name: string; pinyin: string };
+}
+
+interface Suggestion {
+  type: "city" | "property";
+  label: string;
+  sublabel?: string;
+  value: string;
+  slug?: string;
 }
 
 const typeLabels: Record<string, string> = {
@@ -27,28 +38,121 @@ const typeLabels: Record<string, string> = {
 
 const headerTabs = [
   { key: "logements", label: "Logements", icon: "/icons/apartment.png" },
-  { key: "experiences", label: "Expériences", icon: "/icons/travel-map.png", badge: "NOUVEAU" },
-  { key: "services", label: "Services", icon: "/icons/bell.png", badge: "NOUVEAU" },
+  {
+    key: "experiences",
+    label: "Expériences",
+    icon: "/icons/travel-map.png",
+    badge: "NOUVEAU",
+  },
+  {
+    key: "services",
+    label: "Services",
+    icon: "/icons/bell.png",
+    badge: "NOUVEAU",
+  },
 ];
 
 export function DesktopHeader() {
   const [cities, setCities] = useState<City[]>([]);
-  const [search, setSearch] = useState("");
-  const [cityId, setCityId] = useState("");
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [destination, setDestination] = useState("");
   const [type, setType] = useState("");
   const [activeTab, setActiveTab] = useState("logements");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetch("/api/public/properties?limit=0")
+    fetch("/api/public/properties")
       .then((r) => r.json())
       .then((json) => {
-        if (json.cities) setCities(json.cities);
+        if (json.success) {
+          setProperties(json.data);
+          setCities(json.cities || []);
+        }
       })
       .catch(() => {});
   }, []);
 
+  // Close suggestions on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(e.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(e.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // Compute suggestions
+  useEffect(() => {
+    const q = destination.toLowerCase().trim();
+
+    if (!q) {
+      // Default: show all cities
+      const defaults: Suggestion[] = cities.map((c) => ({
+        type: "city" as const,
+        label: c.pinyin,
+        sublabel: c.name,
+        value: c.id,
+      }));
+      setSuggestions(defaults);
+      return;
+    }
+
+    const matched: Suggestion[] = [];
+
+    cities.forEach((c) => {
+      if (
+        c.pinyin.toLowerCase().includes(q) ||
+        c.name.toLowerCase().includes(q)
+      ) {
+        matched.push({
+          type: "city",
+          label: c.pinyin,
+          sublabel: c.name,
+          value: c.id,
+        });
+      }
+    });
+
+    properties.forEach((p) => {
+      if (
+        p.title.toLowerCase().includes(q) ||
+        p.city.pinyin.toLowerCase().includes(q)
+      ) {
+        matched.push({
+          type: "property",
+          label: p.title,
+          sublabel: `${typeLabels[p.type] || p.type} · ${p.city.pinyin}`,
+          value: p.id,
+          slug: p.slug,
+        });
+      }
+    });
+
+    setSuggestions(matched.slice(0, 8));
+  }, [destination, cities, properties]);
+
+  function handleSelect(s: Suggestion) {
+    if (s.type === "property" && s.slug) {
+      window.location.href = `/p/${s.slug}`;
+    } else {
+      setDestination(s.label);
+    }
+    setShowSuggestions(false);
+  }
+
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
+    // Scroll to top — filtering could be done via URL params
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -112,44 +216,25 @@ export function DesktopHeader() {
         </div>
       </div>
 
-      {/* Row 2: Search pill */}
+      {/* Row 2: Search pill with autocomplete */}
       <div className="mx-auto max-w-3xl px-5 pb-5">
         <form onSubmit={handleSearch}>
-          <div className="flex items-center rounded-full border border-[#DDDDDD] bg-white shadow-sm transition-shadow hover:shadow-md">
-            {/* Destination */}
-            <div className="flex-1 py-3.5 pl-7 pr-4">
+          <div className="relative flex items-center rounded-full border border-[#DDDDDD] bg-white shadow-sm transition-shadow hover:shadow-md">
+            {/* Destination — autocomplete input */}
+            <div className="relative flex-1 py-3.5 pl-7 pr-4">
               <label className="block text-xs font-bold text-[#222222]">
                 Destination
               </label>
               <input
+                ref={inputRef}
                 type="text"
-                placeholder="Rechercher une destination"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Rechercher une ville, un logement..."
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+                onFocus={() => setShowSuggestions(true)}
                 className="mt-0.5 w-full bg-transparent text-sm text-[#222222] placeholder:text-[#B0B0B0] focus:outline-none"
+                autoComplete="off"
               />
-            </div>
-
-            {/* Divider */}
-            <div className="h-9 w-px bg-[#DDDDDD]" />
-
-            {/* Ville */}
-            <div className="py-3.5 pl-6 pr-4">
-              <label className="block text-xs font-bold text-[#222222]">
-                Ville
-              </label>
-              <select
-                value={cityId}
-                onChange={(e) => setCityId(e.target.value)}
-                className="mt-0.5 w-full appearance-none bg-transparent text-sm text-[#222222] focus:outline-none [&:not(:valid)]:text-[#B0B0B0]"
-              >
-                <option value="">Toutes les villes</option>
-                {cities.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.pinyin} ({c.name})
-                  </option>
-                ))}
-              </select>
             </div>
 
             {/* Divider */}
@@ -183,6 +268,46 @@ export function DesktopHeader() {
                 <Search className="size-5" />
               </button>
             </div>
+
+            {/* Suggestions dropdown */}
+            {showSuggestions && suggestions.length > 0 && (
+              <div
+                ref={suggestionsRef}
+                className="absolute left-0 top-full z-50 mt-2 w-full max-w-md rounded-2xl border border-[#EBEBEB] bg-white py-2 shadow-lg"
+              >
+                {!destination.trim() && (
+                  <p className="mb-1 px-4 pt-1 text-xs font-semibold uppercase tracking-wider text-[#6A6A6A]">
+                    Suggestions
+                  </p>
+                )}
+                {suggestions.map((s, i) => (
+                  <button
+                    key={`${s.type}-${s.value}-${i}`}
+                    type="button"
+                    onClick={() => handleSelect(s)}
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-[#F7F7F7]"
+                  >
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#F7F7F7]">
+                      {s.type === "city" ? (
+                        <MapPin className="size-4 text-[#6A6A6A]" />
+                      ) : (
+                        <Building2 className="size-4 text-[#6A6A6A]" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-[#222222]">
+                        {s.label}
+                      </p>
+                      {s.sublabel && (
+                        <p className="truncate text-xs text-[#6A6A6A]">
+                          {s.sublabel}
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </form>
       </div>
