@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   createColumnHelper,
@@ -229,6 +230,7 @@ const columns = [
 
 export function PropertiesPage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   // State
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
@@ -239,9 +241,9 @@ export function PropertiesPage() {
   const [statusFilter, setStatusFilter] = useState("");
 
   const [formOpen, setFormOpen] = useState(false);
-  const [editProperty, setEditProperty] = useState<Property | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Property | null>(null);
+  const [editProperty, setEditProperty] = useState<Property | null>(null);
 
   // Queries
   const params = new URLSearchParams();
@@ -331,8 +333,7 @@ export function PropertiesPage() {
 
   // Handlers
   function handleEdit(property: Property) {
-    setEditProperty(property);
-    setFormOpen(true);
+    router.push(`/properties/${property.id}/edit`);
   }
 
   function handleDelete(property: Property) {

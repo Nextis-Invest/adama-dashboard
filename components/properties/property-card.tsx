@@ -19,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
 
 interface PropertyCardProps {
   property: {
@@ -61,6 +62,7 @@ const typeLabels: Record<string, string> = {
 };
 
 export function PropertyCard({ property, onEdit, onDelete }: PropertyCardProps) {
+  const router = useRouter();
   const statusInfo = statusConfig[property.status] ?? {
     label: property.status,
     variant: "outline" as const,
@@ -113,7 +115,7 @@ export function PropertyCard({ property, onEdit, onDelete }: PropertyCardProps) 
               <MoreHorizontal className="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(property)}>
+              <DropdownMenuItem onClick={() => router.push(`/properties/${property.id}/edit`)}>
                 <Pencil className="size-4" />
                 Modifier
               </DropdownMenuItem>
