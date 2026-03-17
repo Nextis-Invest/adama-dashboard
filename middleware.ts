@@ -5,7 +5,7 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
 
   // Public routes — no auth required
-  const publicPaths = ["/login", "/api/auth", "/api/public"];
+  const publicPaths = ["/login", "/api/auth", "/api/public", "/api/health"];
   const isPublic = publicPaths.some((p) => pathname.startsWith(p));
 
   // Root homepage and property detail pages are public
