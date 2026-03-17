@@ -407,7 +407,7 @@ export function DesktopHeader() {
                 <motion.div
                   layoutId="searchSegmentPill"
                   className="absolute inset-0 rounded-full bg-white shadow-[0_1px_6px_rgba(0,0,0,0.1),0_4px_12px_rgba(0,0,0,0.08)]"
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  transition={{ type: "spring", stiffness: 280, damping: 22 }}
                 />
               )}
               <span className={`relative z-10 text-xs font-bold transition-colors duration-200 ${activePanel === "destination" ? "text-[#222222]" : activePanel ? "text-[#929292]" : "text-[#222222]"}`}>Destination</span>
@@ -446,7 +446,7 @@ export function DesktopHeader() {
                 <motion.div
                   layoutId="searchSegmentPill"
                   className="absolute inset-0 rounded-full bg-white shadow-[0_1px_6px_rgba(0,0,0,0.1),0_4px_12px_rgba(0,0,0,0.08)]"
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  transition={{ type: "spring", stiffness: 280, damping: 22 }}
                 />
               )}
               <span className={`relative z-10 text-xs font-bold transition-colors duration-200 ${activePanel === "dates" ? "text-[#222222]" : activePanel ? "text-[#929292]" : "text-[#222222]"}`}>
@@ -471,7 +471,7 @@ export function DesktopHeader() {
                 <motion.div
                   layoutId="searchSegmentPill"
                   className="absolute inset-0 rounded-full bg-white shadow-[0_1px_6px_rgba(0,0,0,0.1),0_4px_12px_rgba(0,0,0,0.08)]"
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  transition={{ type: "spring", stiffness: 280, damping: 22 }}
                 />
               )}
               <span className={`relative z-10 text-xs font-bold transition-colors duration-200 ${activePanel === "guests" ? "text-[#222222]" : activePanel ? "text-[#929292]" : "text-[#222222]"}`}>Voyageurs</span>
