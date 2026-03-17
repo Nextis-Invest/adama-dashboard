@@ -1,11 +1,12 @@
 FROM node:20-alpine AS base
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN npm install -g pnpm@10
 
 # Dependencies
 FROM base AS deps
 WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY package.json pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml* ./
+RUN pnpm install --frozen-lockfile || pnpm install
 
 # Build
 FROM base AS builder
