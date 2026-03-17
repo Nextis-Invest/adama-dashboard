@@ -9,6 +9,7 @@ import {
   ChevronRight,
   ChevronLeft,
   Globe,
+  Heart,
 } from "lucide-react";
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
@@ -81,8 +82,16 @@ const categories = [
   { key: "ROOM", label: "Chambres", icon: "/icons/pet-room.png" },
 ];
 
-/* ─── Services offered by Chinefy ─── */
-const services = [
+interface Service {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+}
+
+/* ─── Services offered by Chinefy (fallback) ─── */
+const fallbackServices = [
   {
     icon: "/icons/apartment.png",
     title: "Logements vérifiés",
@@ -125,6 +134,40 @@ const services = [
   },
 ];
 
+/* ─── Favorite Button ─── */
+function FavButton({ propertyId }: { propertyId: string }) {
+  const [liked, setLiked] = useState(false);
+
+  useEffect(() => {
+    const favs: string[] = JSON.parse(localStorage.getItem("chinefy_favorites") || "[]");
+    setLiked(favs.includes(propertyId));
+  }, [propertyId]);
+
+  const toggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const favs: string[] = JSON.parse(localStorage.getItem("chinefy_favorites") || "[]");
+    const next = liked ? favs.filter((id) => id !== propertyId) : [...favs, propertyId];
+    localStorage.setItem("chinefy_favorites", JSON.stringify(next));
+    setLiked(!liked);
+  };
+
+  return (
+    <button
+      onClick={toggle}
+      className="absolute top-3 right-3 z-10 flex size-8 items-center justify-center rounded-full transition-transform hover:scale-110 active:scale-95"
+      aria-label="Ajouter aux favoris"
+    >
+      <Heart
+        className={`size-6 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] transition-colors ${
+          liked ? "fill-[#FF385C] text-[#FF385C]" : "fill-black/50 text-white"
+        }`}
+        strokeWidth={liked ? 0 : 2}
+      />
+    </button>
+  );
+}
+
 /* ─── Horizontal Carousel Card ─── */
 function CarouselPropertyCard({ property }: { property: Property }) {
   return (
@@ -142,6 +185,8 @@ function CarouselPropertyCard({ property }: { property: Property }) {
               <BedDouble className="size-12 text-[#FF385C]/20" />
             </div>
           )}
+
+          <FavButton propertyId={property.id} />
 
           {property.isFeatured && (
             <div className="absolute top-3 left-3">
@@ -200,6 +245,8 @@ function GridPropertyCard({ property }: { property: Property }) {
               <BedDouble className="size-12 text-[#FF385C]/20" />
             </div>
           )}
+
+          <FavButton propertyId={property.id} />
 
           {property.isFeatured && (
             <div className="absolute top-3 left-3">
@@ -333,6 +380,7 @@ function HomePageContent() {
   const [destinations, setDestinations] = useState<DestinationCategory[]>([]);
   const [activeDestTab, setActiveDestTab] = useState("");
   const [curatedLists, setCuratedLists] = useState<CuratedList[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
 
   useEffect(() => {
     fetchProperties();
@@ -353,6 +401,13 @@ function HomePageContent() {
       .then((r) => r.json())
       .then((json) => {
         if (json.success) setCuratedLists(json.data);
+      })
+      .catch(() => {});
+
+    fetch("/api/public/services")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success) setServices(json.data);
       })
       .catch(() => {});
   }, []);
@@ -561,13 +616,13 @@ function HomePageContent() {
           </div>
 
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {services.map((service) => (
+            {(services.length > 0 ? services : fallbackServices).map((service) => (
               <div
                 key={service.title}
                 className="group rounded-2xl border border-[#EBEBEB] bg-white p-5 transition-all hover:border-[#DDDDDD] hover:shadow-[0_6px_16px_rgba(0,0,0,0.12)]"
               >
                 <img
-                  src={service.icon}
+                  src={service.icon || ""}
                   alt={service.title}
                   className="size-14 object-contain"
                 />

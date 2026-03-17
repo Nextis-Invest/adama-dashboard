@@ -54,12 +54,6 @@ const typeLabels: Record<string, string> = {
 const headerTabs = [
   { key: "logements", label: "Logements", icon: "/icons/apartment.png" },
   {
-    key: "experiences",
-    label: "Expériences",
-    icon: "/icons/travel-map.png",
-    badge: "NOUVEAU",
-  },
-  {
     key: "services",
     label: "Services",
     icon: "/icons/bell.png",
@@ -407,7 +401,7 @@ export function DesktopHeader() {
                 <motion.div
                   layoutId="searchSegmentPill"
                   className="absolute inset-0 rounded-full bg-white shadow-[0_1px_6px_rgba(0,0,0,0.1),0_4px_12px_rgba(0,0,0,0.08)]"
-                  transition={{ type: "spring", stiffness: 280, damping: 22 }}
+                  transition={{ type: "spring", stiffness: 150, damping: 20 }}
                 />
               )}
               <span className={`relative z-10 text-xs font-bold transition-colors duration-200 ${activePanel === "destination" ? "text-[#222222]" : activePanel ? "text-[#929292]" : "text-[#222222]"}`}>Destination</span>
@@ -446,7 +440,7 @@ export function DesktopHeader() {
                 <motion.div
                   layoutId="searchSegmentPill"
                   className="absolute inset-0 rounded-full bg-white shadow-[0_1px_6px_rgba(0,0,0,0.1),0_4px_12px_rgba(0,0,0,0.08)]"
-                  transition={{ type: "spring", stiffness: 280, damping: 22 }}
+                  transition={{ type: "spring", stiffness: 150, damping: 20 }}
                 />
               )}
               <span className={`relative z-10 text-xs font-bold transition-colors duration-200 ${activePanel === "dates" ? "text-[#222222]" : activePanel ? "text-[#929292]" : "text-[#222222]"}`}>
@@ -471,7 +465,7 @@ export function DesktopHeader() {
                 <motion.div
                   layoutId="searchSegmentPill"
                   className="absolute inset-0 rounded-full bg-white shadow-[0_1px_6px_rgba(0,0,0,0.1),0_4px_12px_rgba(0,0,0,0.08)]"
-                  transition={{ type: "spring", stiffness: 280, damping: 22 }}
+                  transition={{ type: "spring", stiffness: 150, damping: 20 }}
                 />
               )}
               <span className={`relative z-10 text-xs font-bold transition-colors duration-200 ${activePanel === "guests" ? "text-[#222222]" : activePanel ? "text-[#929292]" : "text-[#222222]"}`}>Voyageurs</span>
@@ -580,7 +574,7 @@ export function DesktopHeader() {
               transition={{ duration: 0.2, ease: "easeOut" }}
               className="absolute left-1/2 top-full z-50 mt-3 w-[720px] -translate-x-1/2 rounded-3xl border border-[#EBEBEB] bg-white p-6 shadow-xl">
               {/* Tabs: Dates / Mois / Flexible */}
-              <div className="mb-5 flex items-center justify-center gap-1.5 rounded-full bg-[#EBEBEB] p-1">
+              <div className="relative mb-5 flex items-center justify-center gap-1.5 rounded-full bg-[#EBEBEB] p-1">
                 {(
                   [
                     { key: "dates", label: "Dates" },
@@ -592,13 +586,20 @@ export function DesktopHeader() {
                     key={tab.key}
                     type="button"
                     onClick={() => setDateTab(tab.key)}
-                    className={`relative rounded-full px-5 py-2 text-sm font-medium transition-all duration-300 ${
+                    className={`relative z-10 rounded-full px-5 py-2 text-sm font-medium transition-colors duration-300 ${
                       dateTab === tab.key
-                        ? "bg-[#222222] text-white shadow-sm"
-                        : "bg-transparent text-[#222222] hover:bg-[#DDDDDD]"
+                        ? "text-white"
+                        : "text-[#222222] hover:text-[#000000]"
                     }`}
                   >
-                    {tab.label}
+                    {dateTab === tab.key && (
+                      <motion.div
+                        layoutId="datePill"
+                        className="absolute inset-0 rounded-full bg-[#222222] shadow-sm"
+                        transition={{ type: "spring", stiffness: 150, damping: 20 }}
+                      />
+                    )}
+                    <span className="relative z-10">{tab.label}</span>
                   </button>
                 ))}
               </div>

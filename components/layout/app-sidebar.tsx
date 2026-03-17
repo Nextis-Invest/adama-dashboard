@@ -16,6 +16,8 @@ import {
   AlertTriangle,
   Compass,
   List,
+  Briefcase,
+  Sparkles,
 } from "lucide-react";
 import {
   Sidebar,
@@ -38,6 +40,8 @@ const mainNav = [
   { title: "Messages", href: "/messages", icon: MessageSquare },
   { title: "Destinations", href: "/destinations", icon: Compass },
   { title: "Listes", href: "/lists", icon: List },
+  { title: "Services", href: "/services", icon: Briefcase },
+  { title: "Expériences", href: "/experiences", icon: Sparkles },
 ];
 
 const financeNav = [

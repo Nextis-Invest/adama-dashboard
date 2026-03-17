@@ -93,8 +93,9 @@ model City {
   famousFor   String? // e.g. "Célèbre pour la Grande Muraille"
   coverImage  String? // City illustration/photo URL
 
-  agencies   Agency[]
-  properties Property[]
+  agencies    Agency[]
+  properties  Property[]
+  experiences Experience[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -237,6 +238,54 @@ model PropertyListItem {
   @@unique([listId, propertyId])
   @@index([listId])
   @@map("property_list_items")
+}
+
+// ─── Service ────────────────────────────────────────────────
+
+model Service {
+  id          String  @id @default(cuid())
+  title       String
+  slug        String  @unique
+  description String?
+  icon        String?
+  order       Int     @default(0)
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("services")
+}
+
+// ─── Experience ─────────────────────────────────────────────
+
+model Experience {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  description     String?
+  coverImage      String?
+  price           Decimal? @db.Decimal(10, 2)
+  duration        String?
+  location        String?
+  cityId          String?
+  maxParticipants Int?
+  category        String?
+  rating          Decimal? @db.Decimal(3, 2)
+  reviewCount     Int      @default(0)
+  hostName        String?
+  hostPhoto       String?
+  photos          String[] @default([])
+  order           Int      @default(0)
+  isActive        Boolean  @default(true)
+  isFeatured      Boolean  @default(false)
+
+  city City? @relation(fields: [cityId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("experiences")
 }
 
 // ─── Payment ────────────────────────────────────────────────
