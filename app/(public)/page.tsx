@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { useHeaderTab } from "@/lib/header-tab-context";
 
 interface Property {
   id: string;
@@ -84,57 +83,7 @@ const categories = [
   { key: "ROOM", label: "Chambres", icon: "/icons/pet-room.png" },
 ];
 
-interface Service {
-  id: string;
-  title: string;
-  slug: string;
-  description: string | null;
-  icon: string | null;
-}
 
-/* ─── Services offered by Chinefy (fallback) ─── */
-const fallbackServices = [
-  {
-    icon: "/icons/apartment.png",
-    title: "Logements vérifiés",
-    description: "Appartements, villas, studios — inspectés et gérés par nos agences partenaires en Chine.",
-  },
-  {
-    icon: "/icons/legal.png",
-    title: "Aide juridique",
-    description: "Accompagnement pour vos contrats, visas et démarches administratives en Chine.",
-  },
-  {
-    icon: "/icons/flight.png",
-    title: "Billets d'avion",
-    description: "Organisation complète de votre voyage : réservation de vols aux meilleurs tarifs.",
-  },
-  {
-    icon: "/icons/location-pin.png",
-    title: "Transfert aéroport",
-    description: "Service de transfert depuis l'aéroport jusqu'à votre logement, sans stress.",
-  },
-  {
-    icon: "/icons/car-rental.png",
-    title: "Location de voiture",
-    description: "Véhicules disponibles à la réservation pour vos déplacements sur place.",
-  },
-  {
-    icon: "/icons/factory.png",
-    title: "Mise en relation Factory",
-    description: "Connectez-vous directement avec des usines et fournisseurs chinois de confiance.",
-  },
-  {
-    icon: "/icons/llc.png",
-    title: "Création LLC Delaware",
-    description: "Création de votre société américaine (LLC) pour faciliter vos échanges commerciaux.",
-  },
-  {
-    icon: "/icons/agent.png",
-    title: "Accompagnement personnalisé",
-    description: "Un interlocuteur dédié bilingue pour toutes vos questions et besoins sur place.",
-  },
-];
 
 /* ─── Cookie helpers for non-authenticated favorites ─── */
 function getFavoriteCookie(): string[] {
@@ -376,7 +325,6 @@ export default function HomePage() {
 }
 
 function HomePageContent() {
-  const { activeTab } = useHeaderTab();
   const { data: session, status: sessionStatus } = useSession();
   const searchParams = useSearchParams();
   const urlCity = searchParams.get("city") || "";
@@ -390,7 +338,6 @@ function HomePageContent() {
   const [destinations, setDestinations] = useState<DestinationCategory[]>([]);
   const [activeDestTab, setActiveDestTab] = useState("");
   const [curatedLists, setCuratedLists] = useState<CuratedList[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 
   // Load favorites on mount / when session changes
@@ -461,13 +408,6 @@ function HomePageContent() {
         if (json.success) setCuratedLists(json.data);
       })
       .catch(() => {});
-
-    fetch("/api/public/services")
-      .then((r) => r.json())
-      .then((json) => {
-        if (json.success) setServices(json.data);
-      })
-      .catch(() => {});
   }, []);
 
   async function fetchProperties() {
@@ -503,11 +443,8 @@ function HomePageContent() {
 
   return (
     <>
-      {/* ── Tab-conditional content ── */}
-      {activeTab === "logements" && (
-        <>
-          {/* ── Section 1: Category Tabs (Airbnb style horizontal scroll — centered) ── */}
-          <section className="border-b border-[#EBEBEB] bg-white">
+      {/* ── Section 1: Category Tabs (Airbnb style horizontal scroll — centered) ── */}
+      <section className="border-b border-[#EBEBEB] bg-white">
             <div className="mx-auto max-w-7xl">
               <div className="flex items-center justify-center gap-1 overflow-x-auto px-5 pt-3 pb-0 scrollbar-none sm:gap-2 sm:pt-4">
                 {categories.map((cat) => {
@@ -625,110 +562,6 @@ function HomePageContent() {
               </section>
             </div>
           )}
-        </>
-      )}
-
-      {activeTab === "transfert" && (
-        <>
-          {/* Hero */}
-          <section className="bg-white py-10 sm:py-16">
-            <div className="mx-auto max-w-7xl px-5">
-              <h1 className="font-display text-2xl font-bold text-[#222222] sm:text-3xl">
-                Vos déplacements en Chine
-              </h1>
-              <p className="mt-3 max-w-2xl text-sm text-[#6A6A6A] sm:text-base">
-                Réservez vos billets d&apos;avion, trains à grande vitesse, transferts aéroport et locations de voiture — tout depuis une seule plateforme.
-              </p>
-
-              {/* Transport categories */}
-              <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {[
-                  { icon: "/icons/flight.png", title: "Billets d'avion", desc: "Vols intérieurs et internationaux aux meilleurs tarifs. Compagnies chinoises et internationales." },
-                  { icon: "/icons/travel-map.png", title: "Train grande vitesse", desc: "Réseau CRH/Fuxing : voyagez entre les grandes villes chinoises en un temps record." },
-                  { icon: "/icons/location-pin.png", title: "Transfert aéroport", desc: "Chauffeur privé à votre arrivée. Transfert garanti vers votre logement, sans stress." },
-                  { icon: "/icons/car-rental.png", title: "Location de voiture", desc: "Véhicules avec ou sans chauffeur pour vos déplacements professionnels et personnels." },
-                ].map((item) => (
-                  <div
-                    key={item.title}
-                    className="group flex flex-col rounded-2xl border border-[#EBEBEB] bg-white p-6 transition-all hover:border-[#DDDDDD] hover:shadow-[0_6px_16px_rgba(0,0,0,0.12)]"
-                  >
-                    <img src={item.icon} alt={item.title} className="size-16 object-contain" />
-                    <h3 className="font-display mt-4 text-[15px] font-semibold text-[#222222]">{item.title}</h3>
-                    <p className="mt-2 flex-1 text-sm leading-relaxed text-[#6A6A6A]">{item.desc}</p>
-                    <button className="mt-5 w-full rounded-lg bg-[#222222] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#000000]">
-                      Demander un devis
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* How it works */}
-          <section className="border-t border-[#EBEBEB] bg-[#F7F7F7] py-10 sm:py-16">
-            <div className="mx-auto max-w-7xl px-5">
-              <h2 className="font-display text-center text-xl font-bold text-[#222222] sm:text-2xl">
-                Comment ça marche
-              </h2>
-              <div className="mt-10 grid gap-8 sm:grid-cols-3">
-                {[
-                  { step: "1", title: "Décrivez votre besoin", desc: "Indiquez votre trajet, dates et nombre de voyageurs. Nous cherchons les meilleures options." },
-                  { step: "2", title: "Recevez votre devis", desc: "En moins de 24h, recevez un devis détaillé avec plusieurs options de prix et d'horaires." },
-                  { step: "3", title: "Confirmez et voyagez", desc: "Validez votre choix, payez en ligne, et recevez vos billets ou confirmation de réservation." },
-                ].map((item) => (
-                  <div key={item.step} className="text-center">
-                    <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-[#FF385C] text-xl font-bold text-white">
-                      {item.step}
-                    </div>
-                    <h3 className="font-display mt-4 text-base font-semibold text-[#222222]">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-[#6A6A6A]">{item.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        </>
-      )}
-
-      {activeTab === "services" && (
-        <>
-          <section className="bg-white py-10 sm:py-16">
-            <div className="mx-auto max-w-7xl px-5">
-              <h1 className="font-display text-2xl font-bold text-[#222222] sm:text-3xl">
-                Nos services
-              </h1>
-              <p className="mt-3 max-w-2xl text-sm text-[#6A6A6A] sm:text-base">
-                Chinefy vous accompagne dans tous les aspects de votre installation et de vos affaires en Chine.
-              </p>
-
-              <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {(services.length > 0 ? services : fallbackServices).map((service) => (
-                  <Link
-                    key={service.title}
-                    href={`/services/${service.slug}`}
-                    className="group flex flex-col rounded-2xl border border-[#EBEBEB] bg-white p-6 transition-all hover:border-[#DDDDDD] hover:shadow-[0_6px_16px_rgba(0,0,0,0.12)]"
-                  >
-                    <img
-                      src={service.icon || ""}
-                      alt={service.title}
-                      className="size-16 object-contain"
-                    />
-                    <h3 className="font-display mt-4 text-lg font-semibold text-[#222222]">
-                      {service.title}
-                    </h3>
-                    <p className="mt-2 flex-1 text-sm leading-relaxed text-[#6A6A6A]">
-                      {service.description}
-                    </p>
-                    <span className="mt-5 block w-full rounded-lg border border-[#222222] px-4 py-3 text-center text-sm font-semibold text-[#222222] transition-colors group-hover:bg-[#222222] group-hover:text-white">
-                      En savoir plus
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
-        </>
-      )}
 
       {/* ── Section 5: Destination Ideas (dynamic from dashboard) ── */}
       {destinations.length > 0 && (
@@ -774,43 +607,7 @@ function HomePageContent() {
         </section>
       )}
 
-      {/* ── Section 6: Services Chinefy ── */}
-      <section className="border-t border-[#EBEBEB] bg-white py-10 sm:py-16">
-        <div className="mx-auto max-w-7xl px-5">
-          <div className="text-center">
-            <h2 className="font-display text-2xl font-bold text-[#222222] sm:text-3xl">
-              Bien plus que des logements
-            </h2>
-            <p className="mx-auto mt-3 max-w-xl text-sm text-[#6A6A6A] sm:text-base">
-              Chinefy vous accompagne dans tous les aspects de votre installation et de vos affaires en Chine.
-            </p>
-          </div>
-
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {(services.length > 0 ? services : fallbackServices).map((service) => (
-              <Link
-                key={service.title}
-                href={`/services/${service.slug}`}
-                className="group rounded-2xl border border-[#EBEBEB] bg-white p-5 transition-all hover:border-[#DDDDDD] hover:shadow-[0_6px_16px_rgba(0,0,0,0.12)]"
-              >
-                <img
-                  src={service.icon || ""}
-                  alt={service.title}
-                  className="size-14 object-contain"
-                />
-                <h3 className="font-display mt-4 text-[15px] font-semibold text-[#222222]">
-                  {service.title}
-                </h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-[#6A6A6A]">
-                  {service.description}
-                </p>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Section 7: Footer ── */}
+      {/* ── Footer ── */}
       <footer className="border-t border-[#EBEBEB] bg-[#F7F7F7]">
         <div className="mx-auto max-w-7xl px-5 py-8 sm:py-10">
           <div className="grid gap-8 sm:grid-cols-3">

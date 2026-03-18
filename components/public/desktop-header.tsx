@@ -54,18 +54,6 @@ const typeLabels: Record<string, string> = {
 
 const headerTabs = [
   { key: "logements" as const, label: "Logements", icon: "/icons/apartment.png" },
-  {
-    key: "transfert" as const,
-    label: "Transfert",
-    icon: "/icons/flight.png",
-    badge: "NOUVEAU",
-  },
-  {
-    key: "services" as const,
-    label: "Services",
-    icon: "/icons/bell.png",
-    badge: "NOUVEAU",
-  },
 ];
 
 const flexibilityOptions = [
@@ -354,14 +342,7 @@ export function DesktopHeader() {
                   alt={tab.label}
                   className="size-10 object-contain"
                 />
-                <div className="flex flex-col items-start">
-                  {tab.badge && (
-                    <span className="mb-0.5 rounded-sm bg-[#222222] px-1.5 py-[1px] text-[8px] font-bold uppercase leading-tight text-white">
-                      {tab.badge}
-                    </span>
-                  )}
-                  <span className="text-sm font-medium">{tab.label}</span>
-                </div>
+                <span className="text-sm font-medium">{tab.label}</span>
               </button>
             );
           })}
