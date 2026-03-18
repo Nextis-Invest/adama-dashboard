@@ -14,10 +14,6 @@ import {
   Settings,
   MessageSquare,
   AlertTriangle,
-  Compass,
-  List,
-  Briefcase,
-  Sparkles,
 } from "lucide-react";
 import {
   Sidebar,
@@ -38,10 +34,6 @@ const mainNav = [
   { title: "Agences", href: "/agencies", icon: Building },
   { title: "Villes", href: "/cities", icon: MapPin },
   { title: "Messages", href: "/messages", icon: MessageSquare },
-  { title: "Destinations", href: "/destinations", icon: Compass },
-  { title: "Listes", href: "/lists", icon: List },
-  { title: "Services", href: "/services", icon: Briefcase },
-  { title: "Expériences", href: "/experiences", icon: Sparkles },
 ];
 
 const financeNav = [
