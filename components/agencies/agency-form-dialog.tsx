@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import {
   Dialog,
@@ -150,6 +151,9 @@ export function AgencyFormDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["agencies"] });
       onOpenChange(false);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
