@@ -3,6 +3,7 @@ import { Funnel_Display } from "next/font/google";
 import localFont from "next/font/local";
 import { Toaster } from "sonner";
 import "./globals.css";
+import { UmamiAnalytics } from "./umami-analytics"
 
 const funnelDisplay = Funnel_Display({
   variable: "--font-funnel",
@@ -29,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${geistSans.variable} ${funnelDisplay.variable}`}>
       <body className="antialiased">
+        <UmamiAnalytics />
         {children}
         <Toaster position="top-right" richColors />
       </body>
